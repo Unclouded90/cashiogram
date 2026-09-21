@@ -9,30 +9,50 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            ex.getMessage()
+        );
+
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ex.getMessage());
+            .body(error);
     }
 
     @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<String> handleInternalServerException(InternalServerException ex) {
+    public ResponseEntity<ErrorResponse> handleInternalServerException(InternalServerException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            ex.getMessage()
+        );
+
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ex.getMessage());
+            .body(error);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<String> handleConflictException(ConflictException ex) {
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.CONFLICT.value(),
+            ex.getMessage()
+        );
+
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
-            .body(ex.getMessage());
+            .body(error);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<String> handleBadRequest(BadRequestException ex) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            ex.getMessage()
+        );
+
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ex.getMessage());
+            .body(error);
     }
 }
