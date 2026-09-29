@@ -22,4 +22,9 @@ public interface SubcategoryRepository extends JpaRepository<SubcategoryEntity, 
         UUID categoryId,
         String name
     );
+    boolean existsByCategoryIdAndNameIgnoreCaseAndIdNot(
+        UUID categoryId,
+        String name,
+        UUID id
+    );
 }
