@@ -4,7 +4,7 @@ Cashiogram is a personal finance management application built with Java and Spri
 
 The project started from a personal need: I wanted a better way to keep track of my bank balance and expenses, but I was frustrated by how little control most banking applications provide over transaction categorization.
 
-Instead of being limited to a fixed set of categories, Cashiogram is designed to provide more control over how transactions are organized, including custom categories and optional subcategories.
+Instead of being limited to a fixed set of categories, Cashiogram is designed to provide more control over how transactions are organized, including custom categories, subcategories and transaction splits.
 
 The application is intended to run locally and store personal financial data persistently.
 
@@ -19,6 +19,7 @@ The main goal of Cashiogram is to provide a simple personal finance dashboard wh
 - Track the current account balance
 - Register income and expenses
 - Organize transactions using custom categories and subcategories
+- Split a transaction across multiple subcategories
 - Filter transactions by date and category
 - View totals for specific periods
 - Generate summaries and reports based on transaction data
@@ -45,13 +46,13 @@ PUT  /account
 
 The application only allows one account to be initialized.
 
-The current balance will **not** be stored directly in the database. Instead, it will eventually be calculated from:
+The current balance will **not** be stored directly in the database. Instead, it will be calculated from:
 
 ```text
 Current Balance =
 Initial Balance
 + Income
-- Expenses
+- Expense
 ```
 
 This keeps transactions as the source of truth and avoids inconsistencies between transaction data and the stored balance.
@@ -73,7 +74,7 @@ Salary
 Fuel
 ```
 
-Categories support:
+Available operations:
 
 ```text
 GET    /categories
@@ -113,7 +114,7 @@ Bills
 
 A subcategory always belongs to a category.
 
-Available endpoints include:
+Available operations:
 
 ```text
 GET    /subcategories
@@ -161,24 +162,99 @@ Groceries → Food
 
 ---
 
-## Planned V1.0
+### Transactions
 
-The next major feature is the transaction system.
+Transactions represent actual movements of money in the account.
 
-A transaction will represent a movement of money and will contain information such as:
+Each transaction contains:
 
 ```text
 Amount
 Type (INCOME / EXPENSE)
 Category
-Optional Subcategory
 Date
 Description
+Optional splits
 ```
 
-Transactions will be the basis for calculating the current account balance.
+Available operations:
 
-After transactions are implemented, the reporting layer will provide functionality such as:
+```text
+GET    /transactions
+GET    /transactions/{transactionId}
+POST   /transactions
+PATCH  /transactions/{transactionId}
+DELETE /transactions/{transactionId}
+```
+
+Transactions returned by the API are ordered by date, with the most recent transactions first.
+
+A transaction can be created with or without splits.
+
+Example:
+
+```text
+Transaction: €100
+Category: Groceries
+
+Splits:
+├── Food              €50
+├── Cat Products      €20
+└── Cleaning Products €10
+
+Unsplit amount:        €20
+```
+
+The transaction remains the actual bank movement.
+
+Splits are used only for classification and reporting purposes and therefore do not affect the account balance independently.
+
+The total value of all splits must never exceed the transaction amount:
+
+```text
+Sum of splits <= Transaction amount
+```
+
+Each split must reference a subcategory belonging to the same category as the transaction.
+
+Duplicate subcategories inside the same transaction are not allowed.
+
+---
+
+### Transaction Splits
+
+Splits can be created together with a transaction or added later.
+
+Available operations:
+
+```text
+POST   /transactions/{transactionId}/splits
+PATCH  /transactions/{transactionId}/splits/{splitId}
+DELETE /transactions/{transactionId}/splits/{splitId}
+```
+
+When updating a transaction, existing splits are also taken into account.
+
+For example, reducing a transaction amount below the current split total is rejected:
+
+```text
+Transaction amount: €100
+Existing splits:     €80
+
+New amount:          €60  ❌
+```
+
+Changing the transaction category is also rejected if its existing splits belong to subcategories from the previous category.
+
+This keeps the transaction and its classifications consistent.
+
+---
+
+## Planned V1.0
+
+With the main transaction system implemented, the next major step is the balance and reporting layer.
+
+Transactions will be used together with the account's initial balance to calculate:
 
 ```text
 Current balance
@@ -189,6 +265,10 @@ Expenses by subcategory
 Monthly totals
 Transaction filtering
 ```
+
+Because transaction splits are analytical classifications rather than separate financial movements, reports will distinguish between transaction totals and subcategory allocations to avoid double counting.
+
+Persistent storage using PostgreSQL is also planned as part of the backend development.
 
 A later stage of development will introduce the Angular frontend.
 
@@ -204,24 +284,38 @@ com.mauro.cashiogram
 ├── account
 │   ├── dto
 │   ├── entity
-│   └── repository
+│   ├── repository
+│   ├── AccountController
+│   └── AccountService
 │
 ├── category
 │   ├── dto
 │   ├── entity
-│   └── repository
+│   ├── repository
+│   ├── CategoryController
+│   └── CategoryService
 │
 ├── subcategory
 │   ├── dto
 │   ├── entity
-│   └── repository
+│   ├── repository
+│   ├── SubcategoryController
+│   └── SubcategoryService
 │
 ├── transaction
+│   ├── dto
+│   ├── entity
+│   ├── repository
+│   ├── TransactionController
+│   ├── TransactionService
+│   └── TransactionSplitService
 │
 └── exception
 ```
 
 Each feature contains its own controller, service, entities, repositories and DTOs where applicable.
+
+The transaction feature separates transaction management from split management at the service level while exposing both through the same transaction API.
 
 ---
 
@@ -264,13 +358,23 @@ The backend includes unit and web-layer tests using:
 
 Service tests focus on business rules and repository interactions.
 
+This includes scenarios such as:
+
+```text
+Missing resources
+Duplicate resources
+Invalid category/subcategory relationships
+Transaction split limits
+Invalid transaction updates
+```
+
 Controller tests focus on the HTTP contract, including:
 
 ```text
 Request parameters
 Path variables
 JSON serialization/deserialization
-Validation
+Request validation
 HTTP status codes
 Error responses
 ```
@@ -296,13 +400,15 @@ Example:
 }
 ```
 
-Custom exceptions currently include cases such as:
+The application currently handles cases such as:
 
 ```text
-Resource not found
+Resources that do not exist
 Invalid requests
-Duplicate resources
+Invalid business operations
 ```
+
+Business validation is handled primarily at the service layer, while request validation is handled through Jakarta Validation at the controller boundary.
 
 ---
 
@@ -313,19 +419,20 @@ Cashiogram is currently a work in progress.
 Completed:
 
 ```text
-Account        ✅
-Categories     ✅
-Subcategories  ✅
+Account             ✅
+Categories          ✅
+Subcategories       ✅
+Transactions        ✅
+Transaction Splits  ✅
 ```
 
 In progress / planned:
 
 ```text
-Transactions   ⏳
-Balance logic  ⏳
-Reports        ⏳
-Angular UI     ⏳
-Persistence    ⏳
+Balance logic       ⏳
+Reports             ⏳
+Persistence         ⏳
+Angular UI          ⏳
 ```
 
 The project will continue to evolve as new requirements and ideas emerge.
