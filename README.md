@@ -34,7 +34,7 @@ The project is also being developed as a practical exercise in backend and front
 
 Cashiogram currently supports a single local account.
 
-The account stores the initial balance that will later be used together with transactions to calculate the current balance.
+The account stores the initial balance used together with transactions to calculate the current balance.
 
 Available operations:
 
@@ -56,6 +56,58 @@ Initial Balance
 ```
 
 This keeps transactions as the source of truth and avoids inconsistencies between transaction data and the stored balance.
+
+---
+
+### Balance
+
+The current account balance is calculated dynamically from the account's initial balance and the registered transactions.
+
+Available operation:
+
+```text
+GET /balance
+```
+
+The balance response contains:
+
+```text
+Initial Balance
+Total Income
+Total Expenses
+Current Balance
+```
+
+The calculation follows:
+
+```text
+Current Balance =
+Initial Balance
++ Total Income
+- Total Expenses
+```
+
+Only transactions affect the account balance.
+
+Transaction splits are analytical classifications and therefore do not affect the balance independently.
+
+For example:
+
+```text
+Transaction: €100 Expense
+
+Splits:
+├── Food         €60
+└── Cat Products €40
+```
+
+The balance is reduced by:
+
+```text
+€100
+```
+
+not by the individual split amounts.
 
 ---
 
@@ -288,6 +340,12 @@ com.mauro.cashiogram
 │   ├── AccountController
 │   └── AccountService
 │
+├── balance
+│   ├── dto
+│   ├── repository
+│   ├── BalanceController
+│   └── BalanceService
+│
 ├── category
 │   ├── dto
 │   ├── entity
@@ -314,6 +372,8 @@ com.mauro.cashiogram
 ```
 
 Each feature contains its own controller, service, entities, repositories and DTOs where applicable.
+
+The balance feature does not require its own entity because the current balance is derived from existing account and transaction data rather than stored independently.
 
 The transaction feature separates transaction management from split management at the service level while exposing both through the same transaction API.
 
@@ -420,6 +480,7 @@ Completed:
 
 ```text
 Account             ✅
+Balance             ✅
 Categories          ✅
 Subcategories       ✅
 Transactions        ✅
@@ -429,7 +490,6 @@ Transaction Splits  ✅
 In progress / planned:
 
 ```text
-Balance logic       ⏳
 Reports             ⏳
 Persistence         ⏳
 Angular UI          ⏳
