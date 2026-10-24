@@ -186,19 +186,11 @@ Then start the application:
 docker compose up -d --build
 ```
 
-The backend becomes available on:
-
-```text
-http://localhost:8080
-```
+The backend is available at `http://localhost:8080`.
 
 PostgreSQL schema migrations are applied automatically by Flyway during application startup.
 
-The frontend is available on:
-
-```text
-http://localhost:4200
-```
+The frontend is available at `http://localhost:4200`.
 
 API requests from the frontend use the `/api` path, which is proxied to the Spring Boot backend by Nginx.
 
