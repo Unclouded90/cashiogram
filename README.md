@@ -4,7 +4,7 @@ Cashiogram is a personal finance management application built with Java and Spri
 
 The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and, later, Angular.
 
-> The backend and persistence layers are implemented. The Angular frontend is the remaining major part of V1.0.
+> The backend, persistence layer and frontend infrastructure are implemented. The Angular UI is the remaining major part of V1.0.
 
 ---
 
@@ -112,15 +112,14 @@ V3__...
 
 ### Dockerized environment
 
-The application currently runs as two containers:
+The application currently runs as three Docker containers:
 
 ```text
 Cashiogram
-├── backend   → Spring Boot
-└── postgres  → PostgreSQL
+├── backend    → Spring Boot
+├── frontend   → Angular (Nginx)
+└── postgres   → PostgreSQL
 ```
-
-The future Angular frontend will become the third container.
 
 PostgreSQL data is stored in a Docker volume and survives container restarts.
 
@@ -166,6 +165,10 @@ Tests are also executed automatically through GitHub Actions on every push and p
 
 - Angular
 - TypeScript
+- SCSS
+- Vitest
+- Prettier
+- Nginx
 
 ---
 
@@ -191,6 +194,14 @@ http://localhost:8080
 
 PostgreSQL schema migrations are applied automatically by Flyway during application startup.
 
+The frontend is available on:
+
+```text
+http://localhost:4200
+```
+
+API requests from the frontend use the `/api` path, which is proxied to the Spring Boot backend by Nginx.
+
 ---
 
 ## Testing
@@ -201,26 +212,38 @@ From the `backend` directory:
 ./gradlew clean test
 ```
 
-The test suite includes:
+From the `frontend` directory:
+
+```bash
+npm test -- --no-watch --no-progress
+npm run format:check
+npm run build
+```
+
+The backend test suite includes:
 
 - Service unit tests
 - Controller web-layer tests
 - Repository integration tests against PostgreSQL using Testcontainers
+
+The frontend includes component tests using Vitest.
 
 ---
 
 ## V1.0 Status
 
 ```text
-Account             ✅
-Categories          ✅
-Subcategories       ✅
-Transactions        ✅
-Transaction Splits  ✅
-Balance             ✅
-Reports             ✅
-Persistence         ✅
-Angular UI          ⏳
+Account                   ✅
+Categories                ✅
+Subcategories             ✅
+Transactions              ✅
+Transaction Splits        ✅
+Balance                   ✅
+Reports                   ✅
+PostgreSQL Persistence    ✅
+Docker Environment        ✅
+Angular Infrastructure    ✅
+Angular UI                ⏳
 ```
 
 ---
