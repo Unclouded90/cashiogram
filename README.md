@@ -302,27 +302,64 @@ This keeps the transaction and its classifications consistent.
 
 ---
 
-## Planned V1.0
+### Reports
 
-With the main transaction system implemented, the next major step is the balance and reporting layer.
+Cashiogram provides aggregated financial reports based on transaction data.
 
-Transactions will be used together with the account's initial balance to calculate:
+Available operations:
 
 ```text
-Current balance
-Income between dates
-Expenses between dates
-Expenses by category
-Expenses by subcategory
-Monthly totals
-Transaction filtering
+GET /reports/period
+GET /reports/categories
+GET /reports/subcategories
 ```
 
-Because transaction splits are analytical classifications rather than separate financial movements, reports will distinguish between transaction totals and subcategory allocations to avoid double counting.
+Reports can be filtered using date ranges, while category and subcategory reports can also be filtered by transaction type.
 
-Persistent storage using PostgreSQL is also planned as part of the backend development.
+Examples:
 
-A later stage of development will introduce the Angular frontend.
+```text
+GET /reports/period?from=2026-10-01&to=2026-10-31
+
+GET /reports/categories?type=EXPENSE&from=2026-10-01&to=2026-10-31
+
+GET /reports/subcategories?type=EXPENSE&from=2026-10-01&to=2026-10-31
+```
+
+Period reports provide:
+
+```text
+Total Income
+Total Expenses
+Net Total
+```
+
+where:
+
+```text
+Net Total =
+Total Income
+- Total Expenses
+```
+
+Category reports use the full value of each transaction, while subcategory reports use transaction split values.
+
+This preserves the distinction between actual financial movements and analytical transaction classifications.
+
+---
+
+## Planned V1.0
+
+With the account, transaction, balance and initial reporting systems implemented, the remaining backend work will focus on persistence and additional querying capabilities.
+
+Planned functionality includes:
+
+```text
+Persistent PostgreSQL storage
+Angular UI
+```
+
+Additional reporting functionality may be introduced as the application's requirements evolve.
 
 ---
 
@@ -345,6 +382,12 @@ com.mauro.cashiogram
 │   ├── repository
 │   ├── BalanceController
 │   └── BalanceService
+│
+├── report
+│   ├── dto
+│   ├── repository
+│   ├── ReportController
+│   └── ReportService
 │
 ├── category
 │   ├── dto
@@ -374,6 +417,8 @@ com.mauro.cashiogram
 Each feature contains its own controller, service, entities, repositories and DTOs where applicable.
 
 The balance feature does not require its own entity because the current balance is derived from existing account and transaction data rather than stored independently.
+
+The report feature also does not require its own entity. Reports are derived from existing transaction and transaction split data using aggregation queries.
 
 The transaction feature separates transaction management from split management at the service level while exposing both through the same transaction API.
 
@@ -485,12 +530,12 @@ Categories          ✅
 Subcategories       ✅
 Transactions        ✅
 Transaction Splits  ✅
+Reports             ✅
 ```
 
 In progress / planned:
 
 ```text
-Reports             ⏳
 Persistence         ⏳
 Angular UI          ⏳
 ```
