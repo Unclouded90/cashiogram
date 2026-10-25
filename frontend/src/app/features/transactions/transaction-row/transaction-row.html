@@ -1,0 +1,21 @@
+<div class="transaction-row">
+  <span
+    class="transaction-type"
+    [class.income]="type() === 'INCOME'"
+    [class.expense]="type() === 'EXPENSE'"
+  >
+    {{ type() === 'INCOME' ? '↑' : '↓' }}
+  </span>
+
+  <span class="transaction-date">
+    {{ date() | date: 'dd/MM/yyyy' }}
+  </span>
+
+  <span class="transaction-category">
+    {{ category() }}
+  </span>
+
+  <strong class="transaction-amount">
+    {{ amount() | currency: 'EUR' }}
+  </strong>
+</div>

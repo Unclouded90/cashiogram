@@ -1,0 +1,16 @@
+.transactions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.transactions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transactions-actions {
+  display: flex;
+  gap: 0.5rem;
+}

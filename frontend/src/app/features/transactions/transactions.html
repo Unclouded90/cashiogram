@@ -1,0 +1,24 @@
+<section class="transactions">
+  <header class="transactions-header">
+    <h2>Transactions</h2>
+
+    <div class="transactions-actions">
+      <button type="button">Filters</button>
+      <button type="button">List</button>
+      <button type="button">Grid</button>
+    </div>
+  </header>
+
+  <div class="transactions-content">
+    @for (transaction of transactions; track transaction.id) {
+      <app-card>
+        <app-transaction-row
+          [type]="transaction.type"
+          [date]="transaction.date"
+          [category]="transaction.category"
+          [amount]="transaction.amount"
+        />
+      </app-card>
+    }
+  </div>
+</section>

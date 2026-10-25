@@ -1,0 +1,14 @@
+.balance-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.balance-label {
+  font-size: 0.9rem;
+}
+
+.balance-value {
+  font-size: 2rem;
+}

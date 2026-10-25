@@ -1,0 +1,38 @@
+.dashboard {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.dashboard-header app-options {
+  justify-self: end;
+}
+
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dashboard-header > div {
+    display: none;
+  }
+
+  .dashboard-header h1 {
+    justify-self: start;
+  }
+}
