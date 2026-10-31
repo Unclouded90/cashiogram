@@ -1,19 +1,37 @@
-@if (account(); as accountData) {
-  <label for="initial-balance">Initial Balance</label>
+<app-settings-page>
+  <app-card>
+    <a routerLink="/" class="back-button"> ← Back to Dashboard </a>
 
-  <input
-    id="initial-balance"
-    type="number"
-    step="0.01"
-    [value]="accountData.initialBalance"
-    #initialBalance
-  />
+    <section class="account-settings">
+      <h1>Account Settings</h1>
 
-  <button type="button" (click)="updateAccount(initialBalance.value)">Update Account</button>
-} @else {
-  <label for="initial-balance">Initial Balance</label>
+      @if (account(); as accountData) {
+        <div class="account-form">
+          <label for="initial-balance">Initial Balance</label>
 
-  <input id="initial-balance" type="number" step="0.01" #initialBalance />
+          <input
+            id="initial-balance"
+            type="number"
+            step="0.01"
+            [value]="accountData.initialBalance"
+            #initialBalance
+          />
 
-  <button type="button" (click)="createAccount(initialBalance.value)">Create Account</button>
-}
+          <button type="button" (click)="updateAccount(initialBalance.value)">
+            Update Account
+          </button>
+        </div>
+      } @else {
+        <div class="account-form">
+          <label for="initial-balance">Initial Balance</label>
+
+          <input id="initial-balance" type="number" step="0.01" #initialBalance />
+
+          <button type="button" (click)="createAccount(initialBalance.value)">
+            Create Account
+          </button>
+        </div>
+      }
+    </section>
+  </app-card>
+</app-settings-page>

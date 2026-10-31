@@ -11,5 +11,6 @@ export class TransactionRow {
   type = input.required<'INCOME' | 'EXPENSE'>();
   date = input.required<string>();
   category = input.required<string>();
+  description = input<string | null>(null);
   amount = input.required<number>();
 }

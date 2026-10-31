@@ -1,10 +1,9 @@
 import { Component, signal } from '@angular/core';
-
-import { AccountSettings } from '../account/account-settings/account-settings';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-options',
-  imports: [AccountSettings],
+  imports: [RouterLink],
   templateUrl: './options.html',
   styleUrl: './options.scss',
 })

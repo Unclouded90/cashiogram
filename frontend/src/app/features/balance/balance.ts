@@ -15,7 +15,7 @@ export class Balance implements OnInit {
   private readonly balanceService = inject(BalanceService);
   private readonly accountService = inject(AccountService);
 
-  protected readonly balance = signal<BalanceModel | null>(null);
+  protected readonly balance = this.balanceService.balance;
   protected readonly error = signal<string | null>(null);
 
   constructor() {
@@ -34,8 +34,7 @@ export class Balance implements OnInit {
 
   private loadBalance(): void {
     this.balanceService.getBalance().subscribe({
-      next: (balance: BalanceModel) => {
-        this.balance.set(balance);
+      next: () => {
         this.error.set(null);
       },
       error: () => {

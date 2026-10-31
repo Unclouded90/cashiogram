@@ -1,6 +1,7 @@
 package com.mauro.cashiogram.account.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
@@ -33,12 +34,10 @@ class AccountRepositoryTest {
     @Test
     void shouldFindFirstAccountByCreatedAt() {
         AccountEntity firstAccount = createAccount(
-                new BigDecimal("1000.00"),
-                Instant.parse("2026-10-01T10:00:00Z"));
+                new BigDecimal("1000.00"));
 
         createAccount(
-                new BigDecimal("2000.00"),
-                Instant.parse("2026-10-02T10:00:00Z"));
+                new BigDecimal("2000.00"));
 
         Optional<AccountEntity> result = accountRepository.findFirstByOrderByCreatedAt();
 
@@ -53,18 +52,36 @@ class AccountRepositoryTest {
                 result.get().getInitialBalance());
     }
 
+    @Test
+    void shouldUpdateUpdatedAtWhenAccountIsUpdated() {
+        AccountEntity account = createAccount(
+                new BigDecimal("1000.00"));
+
+        Instant updatedAtBefore = account.getUpdatedAt();
+
+        assertNotNull(updatedAtBefore);
+
+        account.setInitialBalance(new BigDecimal("1500.00"));
+
+        AccountEntity updatedAccount = accountRepository.saveAndFlush(account);
+
+        Instant updatedAtAfter = updatedAccount.getUpdatedAt();
+
+        assertNotNull(updatedAtAfter);
+        assertTrue(updatedAtAfter.isAfter(updatedAtBefore));
+
+        assertEquals(
+                new BigDecimal("1500.00"),
+                updatedAccount.getInitialBalance());
+    }
+
     // Helper methods
 
-    private AccountEntity createAccount(
-            BigDecimal initialBalance,
-            Instant createdAt) {
-
+    private AccountEntity createAccount(BigDecimal initialBalance) {
         AccountEntity account = new AccountEntity();
 
         account.setInitialBalance(initialBalance);
-        account.setCreatedAt(createdAt);
-        account.setUpdatedAt(createdAt);
 
-        return accountRepository.save(account);
+        return accountRepository.saveAndFlush(account);
     }
 }

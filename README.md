@@ -4,7 +4,7 @@ Cashiogram is a personal finance management application built with Java, Spring 
 
 The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and frontend development.
 
-> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management and balance integration already available.
+> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories and transactions already available.
 
 ---
 
@@ -87,7 +87,9 @@ Angular services handle communication with the backend through `HttpClient`.
 
 Feature state is exposed using Angular Signals where shared reactive state is useful.
 
-For example, the Account service owns the current account state. When the initial balance is updated, the Balance component reacts to that change and reloads the calculated balance from the backend.
+For example, the Account service owns the current account state and the Balance service exposes the calculated balance as shared reactive state.
+
+Creating, updating or deleting a transaction triggers a balance reload, allowing the Balance component to update automatically without requiring a page refresh.
 
 This keeps components independent from each other while allowing related features to stay synchronized.
 
@@ -183,6 +185,7 @@ Backend:
 - Testcontainers
 
 Repository integration tests run against a temporary real PostgreSQL instance rather than an in-memory database.
+These tests also validate persistence behaviour such as Hibernate-managed creation and update timestamps.
 
 Frontend:
 
@@ -300,8 +303,8 @@ Frontend
 ├── Responsive Dashboard      ✅
 ├── Account Management        ✅
 ├── Balance Integration       ✅
-├── Transactions              ⏳
-├── Categories                ⏳
+├── Transactions              ✅
+├── Categories                ✅
 ├── Subcategories             ⏳
 └── Reports                   ⏳
 ```

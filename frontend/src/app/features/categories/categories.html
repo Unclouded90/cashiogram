@@ -1,0 +1,64 @@
+<app-settings-page>
+  <app-card>
+    <a routerLink="/" class="back-button"> ← Back to Dashboard </a>
+
+    <section class="categories">
+      <h1>Categories</h1>
+
+      <div class="category-form">
+        <input type="text" placeholder="Name" #categoryName />
+
+        <input
+          class="description-input"
+          type="text"
+          placeholder="Description"
+          #categoryDescription
+        />
+
+        <button type="button" (click)="createCategory(categoryName, categoryDescription)">
+          Add Category
+        </button>
+      </div>
+
+      @for (category of categories(); track category.id) {
+        <div class="category-item">
+          @if (editingCategoryId() === category.id) {
+            <div class="category-edit">
+              <input type="text" [value]="category.name" #editName />
+
+              <input
+                class="description-input"
+                type="text"
+                [value]="category.description ?? ''"
+                #editDescription
+              />
+
+              <button
+                type="button"
+                (click)="updateCategory(category.id, editName.value, editDescription.value)"
+              >
+                Save
+              </button>
+            </div>
+          } @else {
+            <div class="category-info">
+              <strong>{{ category.name }}</strong>
+
+              @if (category.description) {
+                <span> - {{ category.description }}</span>
+              }
+            </div>
+
+            <div class="category-actions">
+              <button type="button" (click)="editCategory(category.id)">Edit</button>
+
+              <button type="button" (click)="deleteCategory(category.id)">Delete</button>
+            </div>
+          }
+        </div>
+      } @empty {
+        <p>No categories yet.</p>
+      }
+    </section>
+  </app-card>
+</app-settings-page>

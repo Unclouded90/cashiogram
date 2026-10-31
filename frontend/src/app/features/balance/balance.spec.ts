@@ -6,6 +6,7 @@ import { vi } from 'vitest';
 import { Account } from '../account/account.model';
 import { AccountService } from '../account/account.service';
 import { Balance } from './balance';
+import { Balance as BalanceModel } from './balance.model';
 import { BalanceService } from './balance.service';
 
 describe('Balance', () => {
@@ -14,7 +15,10 @@ describe('Balance', () => {
 
   const accountState = signal<Account | null>(null);
 
+  const balanceState = signal<BalanceModel | null>(null);
+
   const balanceServiceMock = {
+    balance: balanceState.asReadonly(),
     getBalance: vi.fn(),
   };
 
@@ -24,16 +28,21 @@ describe('Balance', () => {
 
   beforeEach(async () => {
     accountState.set(null);
+    balanceState.set(null);
     vi.clearAllMocks();
 
-    balanceServiceMock.getBalance.mockReturnValue(
-      of({
+    balanceServiceMock.getBalance.mockImplementation(() => {
+      const balance = {
         initialBalance: 1000,
         totalIncome: 500,
         totalExpenses: 200,
         currentBalance: 1300,
-      }),
-    );
+      };
+
+      balanceState.set(balance);
+
+      return of(balance);
+    });
 
     await TestBed.configureTestingModule({
       imports: [Balance],
@@ -86,14 +95,18 @@ describe('Balance', () => {
   });
 
   it('should reload the balance when the account changes', async () => {
-    balanceServiceMock.getBalance.mockReturnValue(
-      of({
+    balanceServiceMock.getBalance.mockImplementation(() => {
+      const updatedBalance = {
         initialBalance: 1500,
         totalIncome: 500,
         totalExpenses: 200,
         currentBalance: 1800,
-      }),
-    );
+      };
+
+      balanceState.set(updatedBalance);
+
+      return of(updatedBalance);
+    });
 
     accountState.set({
       id: 'account-id',

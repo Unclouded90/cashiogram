@@ -1,11 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { AccountService } from '../account.service';
+import { Card } from '../../../shared/card/card';
+import { SettingsPage } from '../../../shared/settings-page/settings-page';
 
 @Component({
   selector: 'app-account-settings',
-  imports: [],
+  imports: [Card, RouterLink, SettingsPage],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.scss',
 })

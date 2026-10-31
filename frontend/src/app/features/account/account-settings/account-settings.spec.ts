@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
@@ -44,6 +45,7 @@ describe('AccountSettings', () => {
           provide: AccountService,
           useValue: accountServiceMock,
         },
+        provideRouter([]),
       ],
     }).compileComponents();
 

@@ -1,0 +1,28 @@
+.account-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.account-settings h1 {
+  margin: 0;
+  text-align: center;
+}
+
+.account-form {
+  display: grid;
+  grid-template-columns: auto 10rem auto;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.back-button {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
