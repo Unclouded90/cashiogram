@@ -1,0 +1,19 @@
+@if (account(); as accountData) {
+  <label for="initial-balance">Initial Balance</label>
+
+  <input
+    id="initial-balance"
+    type="number"
+    step="0.01"
+    [value]="accountData.initialBalance"
+    #initialBalance
+  />
+
+  <button type="button" (click)="updateAccount(initialBalance.value)">Update Account</button>
+} @else {
+  <label for="initial-balance">Initial Balance</label>
+
+  <input id="initial-balance" type="number" step="0.01" #initialBalance />
+
+  <button type="button" (click)="createAccount(initialBalance.value)">Create Account</button>
+}

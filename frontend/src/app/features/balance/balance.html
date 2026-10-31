@@ -1,4 +1,15 @@
 <section class="balance-card">
   <span class="balance-label">Current Balance</span>
-  <strong class="balance-value">€0.00</strong>
+
+  @if (error()) {
+    <span class="balance-error">
+      {{ error() }}
+    </span>
+  } @else if (balance(); as balanceData) {
+    <strong class="balance-value">
+      {{ balanceData.currentBalance | currency: 'EUR' }}
+    </strong>
+  } @else {
+    <span>Loading...</span>
+  }
 </section>

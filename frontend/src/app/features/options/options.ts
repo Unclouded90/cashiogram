@@ -1,9 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+
+import { AccountSettings } from '../account/account-settings/account-settings';
 
 @Component({
-  imports: [],
   selector: 'app-options',
-  styleUrl: './options.scss',
+  imports: [AccountSettings],
   templateUrl: './options.html',
+  styleUrl: './options.scss',
 })
-export class Options {}
+export class Options {
+  protected readonly open = signal(false);
+
+  protected toggle(): void {
+    this.open.update((open) => !open);
+  }
+}

@@ -1,10 +1,10 @@
 # Cashiogram
 
-Cashiogram is a personal finance management application built with Java and Spring Boot.
+Cashiogram is a personal finance management application built with Java, Spring Boot and Angular.
 
-The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and, later, Angular.
+The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and frontend development.
 
-> The backend, persistence layer and frontend infrastructure are implemented. The Angular UI is the remaining major part of V1.0.
+> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management and balance integration already available.
 
 ---
 
@@ -17,6 +17,7 @@ The project started from a personal need for better control over transaction cat
 - Dynamically calculated account balance
 - Period, category and subcategory reports
 - PostgreSQL persistence
+- Responsive Angular dashboard
 - Docker-based local environment
 
 ---
@@ -78,6 +79,18 @@ Each feature owns its controller, service, DTOs, repositories and entities where
 
 Derived features such as `balance` and `report` do not have their own entities because their data is calculated from existing persisted data.
 
+The Angular frontend follows the same feature-oriented approach, with reusable visual components kept under `shared`.
+
+### Frontend state and API integration
+
+Angular services handle communication with the backend through `HttpClient`.
+
+Feature state is exposed using Angular Signals where shared reactive state is useful.
+
+For example, the Account service owns the current account state. When the initial balance is updated, the Balance component reacts to that change and reloads the calculated balance from the backend.
+
+This keeps components independent from each other while allowing related features to stay synchronized.
+
 ### Service and database validation
 
 Business rules are primarily enforced in the service layer, while PostgreSQL also protects important data integrity constraints.
@@ -112,16 +125,20 @@ V3__...
 
 ### Dockerized environment
 
-The application currently runs as three Docker containers:
+The application runs as three Docker containers:
 
 ```text
 Cashiogram
-├── backend    → Spring Boot
-├── frontend   → Angular (Nginx)
-└── postgres   → PostgreSQL
+├── frontend  → Angular (Nginx)
+├── backend   → Spring Boot
+└── postgres  → PostgreSQL
 ```
 
 PostgreSQL data is stored in a Docker volume and survives container restarts.
+
+The frontend uses `/api` for backend requests. Nginx proxies these requests to the backend when running the full Docker stack.
+
+During frontend development, the Angular development server uses a local proxy with the same `/api` path.
 
 ---
 
@@ -143,7 +160,20 @@ PostgreSQL data is stored in a Docker volume and survives container restarts.
 
 - PostgreSQL 18
 
+### Frontend
+
+- Angular
+- TypeScript
+- Angular Signals
+- RxJS
+- SCSS
+- Vitest
+- Prettier
+- Nginx
+
 ### Testing
+
+Backend:
 
 - JUnit 5
 - Mockito
@@ -154,21 +184,20 @@ PostgreSQL data is stored in a Docker volume and survives container restarts.
 
 Repository integration tests run against a temporary real PostgreSQL instance rather than an in-memory database.
 
-Tests are also executed automatically through GitHub Actions on every push and pull request.
+Frontend:
+
+- Vitest
+- Angular TestBed
+- Angular HTTP testing utilities
+- Component and service tests
+
+Tests are executed automatically through GitHub Actions on every push and pull request.
 
 ### Infrastructure
 
 - Docker
 - Docker Compose
-
-### Frontend
-
-- Angular
-- TypeScript
-- SCSS
-- Vitest
-- Prettier
-- Nginx
+- GitHub Actions
 
 ---
 
@@ -180,19 +209,36 @@ Create the local environment file:
 cp .env.example .env
 ```
 
-Then start the application:
+Then start the full application:
 
 ```bash
 docker compose up -d --build
 ```
 
-The backend is available at `http://localhost:8080`.
-
-PostgreSQL schema migrations are applied automatically by Flyway during application startup.
+The backend is available at `http://localhost:8081`.
 
 The frontend is available at `http://localhost:4200`.
 
-API requests from the frontend use the `/api` path, which is proxied to the Spring Boot backend by Nginx.
+PostgreSQL schema migrations are applied automatically by Flyway during application startup.
+
+API requests from the frontend use the `/api` path and are proxied to the Spring Boot backend.
+
+### Frontend development
+
+The backend and PostgreSQL can be started through Docker:
+
+```bash
+docker compose up -d postgres backend
+```
+
+Then run the Angular development server:
+
+```bash
+cd frontend
+npm start
+```
+
+The development proxy forwards `/api` requests to the backend.
 
 ---
 
@@ -218,24 +264,46 @@ The backend test suite includes:
 - Controller web-layer tests
 - Repository integration tests against PostgreSQL using Testcontainers
 
-The frontend includes component tests using Vitest.
+The frontend test suite includes:
+
+- Component tests
+- Service tests
+- HTTP request contract tests
+- Reactive state behaviour tests
 
 ---
 
 ## V1.0 Status
 
 ```text
-Account                   ✅
-Categories                ✅
-Subcategories             ✅
-Transactions              ✅
-Transaction Splits        ✅
-Balance                   ✅
-Reports                   ✅
-PostgreSQL Persistence    ✅
-Docker Environment        ✅
-Angular Infrastructure    ✅
-Angular UI                ⏳
+Backend
+├── Account                   ✅
+├── Categories                ✅
+├── Subcategories             ✅
+├── Transactions              ✅
+├── Transaction Splits        ✅
+├── Balance                   ✅
+└── Reports                   ✅
+
+Persistence
+├── PostgreSQL                ✅
+├── Flyway                    ✅
+└── Repository Tests          ✅
+
+Infrastructure
+├── Docker Environment        ✅
+├── Backend CI                ✅
+└── Frontend CI               ✅
+
+Frontend
+├── Angular Infrastructure    ✅
+├── Responsive Dashboard      ✅
+├── Account Management        ✅
+├── Balance Integration       ✅
+├── Transactions              ⏳
+├── Categories                ⏳
+├── Subcategories             ⏳
+└── Reports                   ⏳
 ```
 
 ---

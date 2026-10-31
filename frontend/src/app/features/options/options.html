@@ -1,1 +1,7 @@
-<button type="button" class="options-button">Options</button>
+<button type="button" class="options-button" (click)="toggle()">Options</button>
+
+@if (open()) {
+  <div class="options-panel">
+    <app-account-settings />
+  </div>
+}
