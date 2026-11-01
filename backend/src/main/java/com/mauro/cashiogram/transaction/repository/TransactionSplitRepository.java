@@ -26,5 +26,7 @@ public interface TransactionSplitRepository
             UUID subcategoryId,
             UUID splitId);
 
+    boolean existsBySubcategoryId(UUID subcategoryId);
+
     void deleteByTransactionId(UUID transactionId);
 }

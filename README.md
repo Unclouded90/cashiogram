@@ -4,7 +4,7 @@ Cashiogram is a personal finance management application built with Java, Spring 
 
 The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and frontend development.
 
-> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories and transactions already available.
+> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories, subcategories and transactions already available.
 
 ---
 
@@ -91,6 +91,8 @@ For example, the Account service owns the current account state and the Balance 
 
 Creating, updating or deleting a transaction triggers a balance reload, allowing the Balance component to update automatically without requiring a page refresh.
 
+Category management uses dedicated detail views where categories and their associated subcategories can be created, updated and deleted while preserving their relationship.
+
 This keeps components independent from each other while allowing related features to stay synchronized.
 
 ### Service and database validation
@@ -106,6 +108,8 @@ Examples include:
 - One split per subcategory within the same transaction
 
 Rules involving multiple records, such as ensuring that the total split amount does not exceed the transaction amount, remain service-level business logic.
+Categories referenced by existing transactions cannot be deleted. When an unused category is deleted, its subcategories are removed with it.
+Similarly, subcategories referenced by existing transaction splits cannot be deleted.
 
 ### Flyway owns the database schema
 
@@ -305,7 +309,8 @@ Frontend
 ├── Balance Integration       ✅
 ├── Transactions              ✅
 ├── Categories                ✅
-├── Subcategories             ⏳
+├── Subcategories             ✅
+├── Transaction Splits        ⏳
 └── Reports                   ⏳
 ```
 

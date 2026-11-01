@@ -7,24 +7,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.mauro.cashiogram.subcategory.entity.SubcategoryEntity;
 
-public interface SubcategoryRepository extends JpaRepository<SubcategoryEntity, UUID>{
+public interface SubcategoryRepository extends JpaRepository<SubcategoryEntity, UUID> {
     // Find
     List<SubcategoryEntity> findByNameContainingIgnoreCase(String name);
+
     List<SubcategoryEntity> findByCategoryId(UUID categoryId);
+
     List<SubcategoryEntity> findByCategoryIdAndNameContainingIgnoreCase(
-        UUID categoryId,
-        String name
-    );
-    
+            UUID categoryId,
+            String name);
+
     // Boolean
     boolean existsByNameIgnoreCase(String name);
+
     boolean existsByCategoryIdAndNameIgnoreCase(
-        UUID categoryId,
-        String name
-    );
+            UUID categoryId,
+            String name);
+
     boolean existsByCategoryIdAndNameIgnoreCaseAndIdNot(
-        UUID categoryId,
-        String name,
-        UUID id
-    );
+            UUID categoryId,
+            String name,
+            UUID id);
+
+    // Delete
+    void deleteByCategoryId(UUID categoryId);
 }

@@ -10,5 +10,9 @@ import com.mauro.cashiogram.transaction.entity.TransactionEntity;
 public interface TransactionRepository
         extends JpaRepository<TransactionEntity, UUID> {
 
+    // Find
     List<TransactionEntity> findAllByOrderByDateDesc();
+
+    // Boolean
+    boolean existsByCategoryId(UUID categoryId);
 }

@@ -1,0 +1,120 @@
+<app-settings-page>
+  <app-card>
+    <button type="button" class="back-button" (click)="goBackToCategories()">
+      ← Back to Categories
+    </button>
+
+    @if (category(); as categoryData) {
+      <section class="category-details">
+        @if (editingCategory()) {
+          <div class="category-edit">
+            <input type="text" [value]="categoryData.name" #categoryName />
+
+            <input type="text" [value]="categoryData.description ?? ''" #categoryDescription />
+
+            <div class="category-edit-actions">
+              <button type="button" (click)="updateCategory(categoryName, categoryDescription)">
+                Save
+              </button>
+
+              <button type="button" (click)="cancelCategoryEdit()">Cancel</button>
+            </div>
+          </div>
+        } @else {
+          <div class="category-header">
+            <div class="category-info">
+              <h1>{{ categoryData.name }}</h1>
+
+              @if (categoryData.description) {
+                <p>{{ categoryData.description }}</p>
+              }
+            </div>
+
+            <div class="category-actions">
+              <button type="button" (click)="editCategory()">Edit Category</button>
+
+              <button type="button" (click)="deleteCategory()">Delete Category</button>
+            </div>
+          </div>
+        }
+      </section>
+
+      <section class="subcategories">
+        <h2>Subcategories</h2>
+
+        <div class="subcategories-list">
+          @for (subcategory of subcategories(); track subcategory.id) {
+            @if (editingSubcategoryId() === subcategory.id) {
+              <div class="subcategory-form-card">
+                <input type="text" [value]="subcategory.name" #editSubcategoryName />
+
+                <input
+                  type="text"
+                  [value]="subcategory.description ?? ''"
+                  #editSubcategoryDescription
+                />
+
+                <div class="subcategory-form-actions">
+                  <button
+                    type="button"
+                    (click)="
+                      updateSubcategory(
+                        subcategory.id,
+                        editSubcategoryName,
+                        editSubcategoryDescription
+                      )
+                    "
+                  >
+                    Save
+                  </button>
+
+                  <button type="button" (click)="cancelSubcategoryEdit()">Cancel</button>
+
+                  <button type="button" (click)="deleteSubcategory(subcategory.id)">Delete</button>
+                </div>
+              </div>
+            } @else {
+              <button
+                type="button"
+                class="subcategory-card"
+                (click)="editSubcategory(subcategory.id)"
+              >
+                <strong>{{ subcategory.name }}</strong>
+
+                @if (subcategory.description) {
+                  <span>{{ subcategory.description }}</span>
+                }
+              </button>
+            }
+          }
+
+          @if (addingSubcategory()) {
+            <div class="subcategory-form-card">
+              <input type="text" placeholder="Name" #subcategoryName />
+
+              <input type="text" placeholder="Description" #subcategoryDescription />
+
+              <div class="subcategory-form-actions">
+                <button
+                  type="button"
+                  (click)="createSubcategory(subcategoryName, subcategoryDescription)"
+                >
+                  Save
+                </button>
+
+                <button type="button" (click)="cancelSubcategoryForm()">Cancel</button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="add-subcategory-card" (click)="showSubcategoryForm()">
+              <strong>+</strong>
+              <span>Add Subcategory</span>
+            </button>
+          }
+        </div>
+      </section>
+    } @else {
+      <p>Loading...</p>
+    }
+  </app-card>
+</app-settings-page>

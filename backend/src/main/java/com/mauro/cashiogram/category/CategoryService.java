@@ -12,20 +12,24 @@ import com.mauro.cashiogram.category.dto.UpdateCategoryDTO;
 import com.mauro.cashiogram.category.entity.CategoryEntity;
 import com.mauro.cashiogram.category.repository.CategoryRepository;
 import com.mauro.cashiogram.exception.ResourceNotFoundException;
+import com.mauro.cashiogram.subcategory.repository.SubcategoryRepository;
+import com.mauro.cashiogram.transaction.repository.TransactionRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import com.mauro.cashiogram.exception.BadRequestException;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    private final SubcategoryRepository subcategoryRepository;
+    private final TransactionRepository transactionRepository;
 
     public List<CategoryResponseDTO> getCategories(String name) {
         List<CategoryEntity> categories;
-        
+
         if (name == null || name.isBlank()) {
             categories = categoryRepository.findAll();
         } else {
@@ -33,17 +37,15 @@ public class CategoryService {
         }
 
         return categories
-            .stream()
-            .map(this::mapToResponseDTO)
-            .toList();
+                .stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
     public CategoryResponseDTO getCategoryById(UUID id) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() ->
-            new ResourceNotFoundException(
-                "The category id " + id + " was not found"
-            ));
-        
+        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
+                "The category id " + id + " was not found"));
+
         return mapToResponseDTO(category);
     }
 
@@ -63,20 +65,18 @@ public class CategoryService {
         return this.mapToResponseDTO(savedCategory);
     }
 
-    @Transactional 
+    @Transactional
     public CategoryResponseDTO updateCategory(UUID id, UpdateCategoryDTO updateCategoryDTO) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() ->
-            new ResourceNotFoundException(
-                "The category id " + id + " was not found"
-            ));
-        
+        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
+                "The category id " + id + " was not found"));
+
         if (updateCategoryDTO.name() != null) {
             if (updateCategoryDTO.name().isBlank()) {
                 throw new BadRequestException("Category name must not be blank");
             }
 
             if (!category.getName().equalsIgnoreCase(updateCategoryDTO.name())
-                && categoryRepository.existsByNameIgnoreCase(updateCategoryDTO.name())) {
+                    && categoryRepository.existsByNameIgnoreCase(updateCategoryDTO.name())) {
                 throw new BadRequestException("Category already exists");
             }
 
@@ -84,7 +84,7 @@ public class CategoryService {
         }
 
         category.setName(updateCategoryDTO.name());
-        
+
         if (updateCategoryDTO.description() != null) {
             category.setDescription(updateCategoryDTO.description());
         }
@@ -94,23 +94,26 @@ public class CategoryService {
         return this.mapToResponseDTO(updatedCategory);
     }
 
-    @Transactional 
-    public void deleteCategory(UUID id) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() ->
-            new ResourceNotFoundException(
-                "The category id " + id + " was not found"
-            ));
+    @Transactional
+    public void deleteCategory(UUID categoryId) {
+        CategoryEntity category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
+        if (transactionRepository.existsByCategoryId(categoryId)) {
+            throw new BadRequestException(
+                    "Category cannot be deleted because it is used by existing transactions");
+        }
+
+        subcategoryRepository.deleteByCategoryId(categoryId);
         categoryRepository.delete(category);
     }
 
     // Mapper method
     private CategoryResponseDTO mapToResponseDTO(CategoryEntity category) {
         return new CategoryResponseDTO(
-            category.getId(),
-            category.getName(),
-            category.getDescription(),
-            category.getCreatedAt()
-        );
+                category.getId(),
+                category.getName(),
+                category.getDescription(),
+                category.getCreatedAt());
     }
 }

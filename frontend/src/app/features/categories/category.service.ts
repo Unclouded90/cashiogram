@@ -15,6 +15,10 @@ export class CategoryService {
     return this.http.get<Category[]>(`${environment.apiUrl}/categories`);
   }
 
+  getCategory(categoryId: string): Observable<Category> {
+    return this.http.get<Category>(`${environment.apiUrl}/categories/${categoryId}`);
+  }
+
   createCategory(category: CreateCategory): Observable<Category> {
     return this.http.post<Category>(`${environment.apiUrl}/categories`, category);
   }

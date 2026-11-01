@@ -15,16 +15,20 @@ import com.mauro.cashiogram.subcategory.dto.SubcategoryResponseDTO;
 import com.mauro.cashiogram.subcategory.dto.UpdateSubcategoryDTO;
 import com.mauro.cashiogram.subcategory.entity.SubcategoryEntity;
 import com.mauro.cashiogram.subcategory.repository.SubcategoryRepository;
+import com.mauro.cashiogram.transaction.repository.TransactionSplitRepository;
 
 @Service
 @Transactional(readOnly = true)
 public class SubcategoryService {
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
+    private final TransactionSplitRepository transactionSplitRepository;
 
-    SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository) {
-      this.subcategoryRepository = subcategoryRepository;
-      this.categoryRepository = categoryRepository;
+    SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository,
+            TransactionSplitRepository transactionSplitRepository) {
+        this.subcategoryRepository = subcategoryRepository;
+        this.categoryRepository = categoryRepository;
+        this.transactionSplitRepository = transactionSplitRepository;
     }
 
     public List<SubcategoryResponseDTO> getSubcategories(UUID categoryId, String name) {
@@ -42,25 +46,23 @@ public class SubcategoryService {
         }
 
         return subcategories
-            .stream()
-            .map(this::mapToResponseDTO)
-            .toList();
+                .stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
     public SubcategoryResponseDTO getSubcategoryById(UUID id) {
-        SubcategoryEntity subcategory = subcategoryRepository.findById(id).orElseThrow(() ->
-            new ResourceNotFoundException(
-                "The Subcategory id " + id + " was not found"
-            ));
+        SubcategoryEntity subcategory = subcategoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "The Subcategory id " + id + " was not found"));
 
         return mapToResponseDTO(subcategory);
     }
 
-    @Transactional 
+    @Transactional
     public SubcategoryResponseDTO createSubcategory(UUID categoryId, CreateSubcategoryDTO createSubcategoryDTO) {
-        CategoryEntity category = categoryRepository.findById(categoryId).orElseThrow(() ->
-            new ResourceNotFoundException("The category id " + categoryId + " was not found")
-        );
+        CategoryEntity category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("The category id " + categoryId + " was not found"));
 
         if (subcategoryRepository.existsByCategoryIdAndNameIgnoreCase(categoryId, createSubcategoryDTO.name())) {
             throw new BadRequestException("Subcategory already exists in that category");
@@ -79,16 +81,15 @@ public class SubcategoryService {
 
     @Transactional
     public SubcategoryResponseDTO updateSubcategory(UUID subcategoryId, UpdateSubcategoryDTO updateSubcategoryDTO) {
-        SubcategoryEntity subcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(() ->
-            new ResourceNotFoundException("The subcategory id " + subcategoryId + " was not found")
-        );
-        
+        SubcategoryEntity subcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(
+                () -> new ResourceNotFoundException("The subcategory id " + subcategoryId + " was not found"));
+
         CategoryEntity category = subcategory.getCategory();
 
         if (updateSubcategoryDTO.categoryId() != null) {
-            category = categoryRepository.findById(updateSubcategoryDTO.categoryId()).orElseThrow(() ->
-                new ResourceNotFoundException("The category id " + updateSubcategoryDTO.categoryId() + " was not found")
-            );
+            category = categoryRepository.findById(updateSubcategoryDTO.categoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "The category id " + updateSubcategoryDTO.categoryId() + " was not found"));
         }
 
         if (updateSubcategoryDTO.name() != null) {
@@ -119,9 +120,13 @@ public class SubcategoryService {
 
     @Transactional
     public void deleteSubcategory(UUID subcategoryId) {
-        SubcategoryEntity subcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(() ->
-            new ResourceNotFoundException("The subcategory id " + subcategoryId + " was not found")
-        );
+        SubcategoryEntity subcategory = subcategoryRepository.findById(subcategoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (transactionSplitRepository.existsBySubcategoryId(subcategoryId)) {
+            throw new BadRequestException(
+                    "Subcategory cannot be deleted because it is used by existing transaction splits");
+        }
 
         subcategoryRepository.delete(subcategory);
     }
@@ -129,11 +134,10 @@ public class SubcategoryService {
     // Mapper method
     private SubcategoryResponseDTO mapToResponseDTO(SubcategoryEntity subcategory) {
         return new SubcategoryResponseDTO(
-            subcategory.getId(),
-            subcategory.getName(),
-            subcategory.getDescription(),
-            subcategory.getCategory().getId(),
-            subcategory.getCreatedAt()
-        );
+                subcategory.getId(),
+                subcategory.getName(),
+                subcategory.getDescription(),
+                subcategory.getCategory().getId(),
+                subcategory.getCreatedAt());
     }
 }
