@@ -26,13 +26,21 @@ import com.mauro.cashiogram.category.entity.CategoryEntity;
 import com.mauro.cashiogram.category.repository.CategoryRepository;
 import com.mauro.cashiogram.exception.BadRequestException;
 import com.mauro.cashiogram.exception.ResourceNotFoundException;
+import com.mauro.cashiogram.subcategory.repository.SubcategoryRepository;
+import com.mauro.cashiogram.transaction.repository.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @InjectMocks 
+    @Mock
+    private SubcategoryRepository subcategoryRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @InjectMocks
     private CategoryService categoryService;
 
     private CategoryEntity groceries;
@@ -56,36 +64,36 @@ public class CategoryServiceTest {
     @Test
     void itShouldReturnAllCategories() {
         when(categoryRepository.findAll())
-            .thenReturn(List.of(groceries, restaurants));
+                .thenReturn(List.of(groceries, restaurants));
 
         List<CategoryResponseDTO> result = categoryService.getCategories(null);
 
         assertEquals(2, result.size());
-        
+
         verify(categoryRepository).findAll();
         verify(categoryRepository, never()).findByNameContainingIgnoreCase(anyString());
     }
 
-    @Test 
+    @Test
     void itShouldReturnAllCategoriesWithGroceriesName() {
         when(categoryRepository.findByNameContainingIgnoreCase("groceries"))
-            .thenReturn(List.of(groceries));
+                .thenReturn(List.of(groceries));
 
         List<CategoryResponseDTO> result = categoryService.getCategories("groceries");
 
         assertEquals(1, result.size());
         assertEquals("Groceries", result.get(0).name());
-        
+
         verify(categoryRepository).findByNameContainingIgnoreCase("groceries");
         verify(categoryRepository, never()).findAll();
     }
 
-    @Test 
+    @Test
     void itShouldReturnCategoryById() {
         UUID id = groceries.getId();
 
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.of(groceries));
+                .thenReturn(Optional.of(groceries));
 
         CategoryResponseDTO result = categoryService.getCategoryById(id);
 
@@ -94,33 +102,31 @@ public class CategoryServiceTest {
         verify(categoryRepository).findById(id);
     }
 
-    @Test 
+    @Test
     void itShouldFailToFindCategoryById() {
         UUID id = UUID.randomUUID();
 
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.empty());
-        
+                .thenReturn(Optional.empty());
+
         assertThrows(ResourceNotFoundException.class,
-            () -> categoryService.getCategoryById(id)
-        );
+                () -> categoryService.getCategoryById(id));
 
         verify(categoryRepository).findById(id);
     }
 
-    @Test 
+    @Test
     void itShouldCreateCategory() {
         CreateCategoryDTO request = new CreateCategoryDTO(
-            "Fuel",
-            "Fuel expenses"
-        );
+                "Fuel",
+                "Fuel expenses");
 
         fuel = new CategoryEntity();
         fuel.setName(request.name());
         fuel.setDescription(request.description());
 
         when(categoryRepository.save(any(CategoryEntity.class)))
-            .thenReturn(fuel);
+                .thenReturn(fuel);
 
         CategoryResponseDTO result = categoryService.createCategory(request);
 
@@ -132,27 +138,26 @@ public class CategoryServiceTest {
         verify(categoryRepository).existsByNameIgnoreCase(request.name());
     }
 
-    @Test 
-    void itShouldFailToCreateCategoryWhenNameAlreadyExists () {
+    @Test
+    void itShouldFailToCreateCategoryWhenNameAlreadyExists() {
         CreateCategoryDTO request = new CreateCategoryDTO(
-            "Groceries",
-            "Random purchases");
-            
+                "Groceries",
+                "Random purchases");
+
         when(categoryRepository.existsByNameIgnoreCase("Groceries"))
-            .thenReturn(true);
+                .thenReturn(true);
 
         BadRequestException exception = assertThrows(
-            BadRequestException.class,
-            () -> categoryService.createCategory(request)
-        );
+                BadRequestException.class,
+                () -> categoryService.createCategory(request));
 
         assertEquals("Category already exists", exception.getMessage());
-        
+
         verify(categoryRepository).existsByNameIgnoreCase("Groceries");
         verify(categoryRepository, never()).save(any());
     }
 
-    @Test 
+    @Test
     void itShouldUpdateCategory() {
         UUID id = UUID.randomUUID();
 
@@ -161,52 +166,52 @@ public class CategoryServiceTest {
         bills.setDescription("Monthly bills");
 
         UpdateCategoryDTO request = new UpdateCategoryDTO(
-            "Updated with success", null);
-        
+                "Updated with success", null);
+
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.of(bills));
-        
+                .thenReturn(Optional.of(bills));
+
         when(categoryRepository.save(bills))
-            .thenReturn(bills);
-        
+                .thenReturn(bills);
+
         CategoryResponseDTO result = categoryService.updateCategory(id, request);
 
         assertEquals(request.name(), result.name());
         assertEquals(bills.getDescription(), result.description());
-        
+
         verify(categoryRepository).findById(id);
         verify(categoryRepository).save(bills);
     }
 
-    @Test 
+    @Test
     void itShouldFailToUpdateCategoryIfNotFound() {
         UUID id = UUID.randomUUID();
 
         UpdateCategoryDTO request = new UpdateCategoryDTO(
-            "Update", null);
-        
+                "Update", null);
+
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-            () -> categoryService.updateCategory(id, request));
+                () -> categoryService.updateCategory(id, request));
 
         verify(categoryRepository, never()).save(any(CategoryEntity.class));
     }
 
-    @Test 
+    @Test
     void itShouldFailToUpdateCategoryIfNameIsBlank() {
         UUID id = UUID.randomUUID();
 
         UpdateCategoryDTO request = new UpdateCategoryDTO(
-            " ", null);
+                " ", null);
 
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.of(groceries));
+                .thenReturn(Optional.of(groceries));
 
         assertThrows(BadRequestException.class,
-            () -> categoryService.updateCategory(id, request));
-            
+                () -> categoryService.updateCategory(id, request));
+
         verify(categoryRepository, never()).save(any(CategoryEntity.class));
     }
 
@@ -215,43 +220,82 @@ public class CategoryServiceTest {
         UUID id = groceries.getId();
 
         UpdateCategoryDTO request = new UpdateCategoryDTO(
-            "Restaurants", null);
+                "Restaurants", null);
 
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.of(groceries));
+                .thenReturn(Optional.of(groceries));
 
         when(categoryRepository.existsByNameIgnoreCase("Restaurants"))
-            .thenReturn(true);
+                .thenReturn(true);
 
         assertThrows(BadRequestException.class,
-            () -> categoryService.updateCategory(id, request));
+                () -> categoryService.updateCategory(id, request));
 
         verify(categoryRepository, never()).save(any(CategoryEntity.class));
     }
 
-    @Test 
+    @Test
     void itShouldDeleteCategory() {
         UUID id = groceries.getId();
 
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.of(groceries));
+                .thenReturn(Optional.of(groceries));
+
+        when(transactionRepository.existsByCategoryId(id))
+                .thenReturn(false);
 
         categoryService.deleteCategory(id);
 
         verify(categoryRepository).findById(id);
+        verify(transactionRepository).existsByCategoryId(id);
+        verify(subcategoryRepository).deleteByCategoryId(id);
         verify(categoryRepository).delete(groceries);
     }
 
     @Test
     void itShouldFailToDeleteCategoryIfNotFound() {
         UUID id = UUID.randomUUID();
-        
+
         when(categoryRepository.findById(id))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-            () -> categoryService.deleteCategory(id));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> categoryService.deleteCategory(id));
 
-        verify(categoryRepository, never()).delete(any(CategoryEntity.class));
+        verify(categoryRepository).findById(id);
+
+        verify(transactionRepository, never())
+                .existsByCategoryId(any());
+
+        verify(subcategoryRepository, never())
+                .deleteByCategoryId(any());
+
+        verify(categoryRepository, never())
+                .delete(any(CategoryEntity.class));
+    }
+
+    @Test
+    void itShouldFailToDeleteCategoryIfUsedByTransaction() {
+        UUID id = groceries.getId();
+
+        when(categoryRepository.findById(id))
+                .thenReturn(Optional.of(groceries));
+
+        when(transactionRepository.existsByCategoryId(id))
+                .thenReturn(true);
+
+        assertThrows(
+                BadRequestException.class,
+                () -> categoryService.deleteCategory(id));
+
+        verify(categoryRepository).findById(id);
+        verify(transactionRepository).existsByCategoryId(id);
+
+        verify(subcategoryRepository, never())
+                .deleteByCategoryId(any());
+
+        verify(categoryRepository, never())
+                .delete(any(CategoryEntity.class));
     }
 }

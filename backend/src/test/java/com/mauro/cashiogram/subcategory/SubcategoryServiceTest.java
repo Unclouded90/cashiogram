@@ -28,11 +28,19 @@ import com.mauro.cashiogram.subcategory.dto.SubcategoryResponseDTO;
 import com.mauro.cashiogram.subcategory.dto.UpdateSubcategoryDTO;
 import com.mauro.cashiogram.subcategory.entity.SubcategoryEntity;
 import com.mauro.cashiogram.subcategory.repository.SubcategoryRepository;
+import com.mauro.cashiogram.transaction.repository.TransactionRepository;
+import com.mauro.cashiogram.transaction.repository.TransactionSplitRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class SubcategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @Mock
+    private TransactionSplitRepository transactionSplitRepository;
 
     @Mock
     private SubcategoryRepository subcategoryRepository;
@@ -398,9 +406,13 @@ public class SubcategoryServiceTest {
         when(subcategoryRepository.findById(id))
                 .thenReturn(Optional.of(cats));
 
+        when(transactionSplitRepository.existsBySubcategoryId(id))
+                .thenReturn(false);
+
         subcategoryService.deleteSubcategory(id);
 
         verify(subcategoryRepository).findById(id);
+        verify(transactionSplitRepository).existsBySubcategoryId(id);
         verify(subcategoryRepository).delete(cats);
     }
 
@@ -416,6 +428,28 @@ public class SubcategoryServiceTest {
                 () -> subcategoryService.deleteSubcategory(id));
 
         verify(subcategoryRepository).findById(id);
+        verify(transactionSplitRepository, never())
+                .existsBySubcategoryId(any());
+        verify(subcategoryRepository, never())
+                .delete(any(SubcategoryEntity.class));
+    }
+
+    @Test
+    void itShouldFailToDeleteSubcategoryIfUsedByTransactionSplit() {
+        UUID id = cats.getId();
+
+        when(subcategoryRepository.findById(id))
+                .thenReturn(Optional.of(cats));
+
+        when(transactionSplitRepository.existsBySubcategoryId(id))
+                .thenReturn(true);
+
+        assertThrows(
+                BadRequestException.class,
+                () -> subcategoryService.deleteSubcategory(id));
+
+        verify(subcategoryRepository).findById(id);
+        verify(transactionSplitRepository).existsBySubcategoryId(id);
         verify(subcategoryRepository, never())
                 .delete(any(SubcategoryEntity.class));
     }
