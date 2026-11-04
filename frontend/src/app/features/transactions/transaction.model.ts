@@ -30,3 +30,12 @@ export interface UpdateTransaction {
   date?: string;
   description?: string | null;
 }
+
+export interface CreateTransactionSplit {
+  subcategoryId: string;
+  amount: number;
+}
+
+export interface UpdateTransactionSplit {
+  amount: number;
+}

@@ -1,0 +1,164 @@
+.transaction-details {
+  text-align: center;
+}
+
+.transaction-header {
+  position: relative;
+}
+
+.transaction-info {
+  text-align: center;
+}
+
+.transaction-info h1 {
+  margin: 0;
+}
+
+.transaction-info p {
+  margin: 0.5rem 0 0;
+}
+
+.transaction-summary {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.transaction-actions {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.transaction-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+
+.transaction-edit input,
+.transaction-edit select {
+  padding: 0.5rem 0.75rem;
+}
+
+.transaction-edit-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.splits {
+  margin-top: 2.5rem;
+  text-align: left;
+}
+
+.back-button {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 10;
+
+  display: inline-flex;
+  align-items: center;
+
+  width: auto;
+  padding: 0.25rem 0.5rem;
+
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+
+  cursor: pointer;
+}
+
+.splits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.split-card,
+.add-split-card {
+  width: 100%;
+  min-height: 5rem;
+  padding: 1rem 1.25rem;
+
+  border: 0;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.05);
+
+  box-sizing: border-box;
+}
+
+.split-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.add-split-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  cursor: pointer;
+}
+
+.split-form-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  width: 100%;
+  min-height: 5rem;
+  padding: 1rem 1.25rem;
+
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.05);
+
+  box-sizing: border-box;
+}
+
+.split-form-card select,
+.split-form-card input {
+  padding: 0.5rem 0.75rem;
+}
+
+.split-form-card select {
+  flex: 1;
+}
+
+.split-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.split-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.split-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}

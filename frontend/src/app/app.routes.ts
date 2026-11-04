@@ -4,6 +4,7 @@ import { Dashboard } from './features/dashboard/dashboard';
 import { AccountSettings } from './features/account/account-settings/account-settings';
 import { Categories } from './features/categories/categories';
 import { CategoryDetails } from './features/categories/category-details/category-details';
+import { TransactionDetails } from './features/transactions/transaction-details/transaction-details';
 
 export const routes: Routes = [
   {
@@ -21,5 +22,9 @@ export const routes: Routes = [
   {
     path: 'settings/categories/:categoryId',
     component: CategoryDetails,
+  },
+  {
+    path: 'transactions/:transactionId',
+    component: TransactionDetails,
   },
 ];

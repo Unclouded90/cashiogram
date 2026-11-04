@@ -151,44 +151,42 @@ public class TransactionService {
 
         TransactionEntity transaction = getTransactionOrThrow(transactionId);
 
+        List<TransactionSplitEntity> splits = transactionSplitRepository
+                .findByTransactionId(transactionId);
+
         BigDecimal amount = transaction.getAmount();
 
         if (updateTransactionDTO.amount() != null) {
             amount = updateTransactionDTO.amount();
         }
 
-        CategoryEntity category = transaction.getCategory();
-
-        if (updateTransactionDTO.categoryId() != null) {
-            category = categoryRepository
-                    .findById(updateTransactionDTO.categoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "The category id "
-                                    + updateTransactionDTO.categoryId()
-                                    + " was not found"));
-        }
-
-        List<TransactionSplitEntity> splits = transactionSplitRepository
-                .findByTransactionId(transactionId);
-
         BigDecimal splitTotal = splits.stream()
                 .map(split -> Objects.requireNonNull(split.getAmount()))
-                .reduce(BigDecimal.ZERO, (total, splitAmount) -> total.add(splitAmount));
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (splitTotal.compareTo(amount) > 0) {
             throw new BadRequestException(
                     "The transaction amount cannot be lower than the total split amount");
         }
 
-        for (TransactionSplitEntity split : splits) {
-            if (!split.getSubcategory()
-                    .getCategory()
-                    .getId()
-                    .equals(category.getId())) {
+        CategoryEntity category = transaction.getCategory();
+
+        if (updateTransactionDTO.categoryId() != null) {
+            UUID newCategoryId = updateTransactionDTO.categoryId();
+
+            if (!newCategoryId.equals(transaction.getCategory().getId())
+                    && !splits.isEmpty()) {
 
                 throw new BadRequestException(
-                        "Existing splits do not belong to the new transaction category");
+                        "The transaction category cannot be changed while the transaction has splits");
             }
+
+            category = categoryRepository
+                    .findById(newCategoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "The category id "
+                                    + newCategoryId
+                                    + " was not found"));
         }
 
         transaction.setAmount(amount);

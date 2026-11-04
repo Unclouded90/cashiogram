@@ -4,7 +4,7 @@ Cashiogram is a personal finance management application built with Java, Spring 
 
 The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and frontend development.
 
-> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories, subcategories and transactions already available.
+> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories, subcategories, transactions and transaction split management already available.
 
 ---
 
@@ -93,6 +93,10 @@ Creating, updating or deleting a transaction triggers a balance reload, allowing
 
 Category management uses dedicated detail views where categories and their associated subcategories can be created, updated and deleted while preserving their relationship.
 
+Transaction management follows the same detail-view approach. Each transaction has a dedicated view where it can be updated or deleted and where its amount can be analytically allocated across subcategories using transaction splits.
+
+Split creation, updates and deletion immediately update the local transaction state without affecting the account balance, since splits only classify an existing financial movement.
+
 This keeps components independent from each other while allowing related features to stay synchronized.
 
 ### Service and database validation
@@ -108,6 +112,8 @@ Examples include:
 - One split per subcategory within the same transaction
 
 Rules involving multiple records, such as ensuring that the total split amount does not exceed the transaction amount, remain service-level business logic.
+A transaction amount cannot be reduced below the amount already allocated through its splits.
+A transaction category cannot be changed while the transaction contains splits, preventing existing subcategory allocations from becoming inconsistent with the transaction category.
 Categories referenced by existing transactions cannot be deleted. When an unused category is deleted, its subcategories are removed with it.
 Similarly, subcategories referenced by existing transaction splits cannot be deleted.
 
@@ -310,7 +316,7 @@ Frontend
 ├── Transactions              ✅
 ├── Categories                ✅
 ├── Subcategories             ✅
-├── Transaction Splits        ⏳
+├── Transaction Splits        ✅
 └── Reports                   ⏳
 ```
 

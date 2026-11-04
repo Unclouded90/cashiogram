@@ -535,6 +535,10 @@ class TransactionServiceTest {
                 transaction.getId()))
                 .thenReturn(Optional.of(transaction));
 
+        when(transactionSplitRepository
+                .findByTransactionId(transaction.getId()))
+                .thenReturn(List.of());
+
         when(categoryRepository.findById(newCategoryId))
                 .thenReturn(Optional.empty());
 
@@ -590,9 +594,8 @@ class TransactionServiceTest {
     }
 
     @Test
-    void shouldFailUpdateWhenExistingSplitsDoNotBelongToNewCategory() {
+    void shouldUpdateCategoryWhenTransactionHasNoSplits() {
         CategoryEntity oldCategory = createCategory();
-
         CategoryEntity newCategory = createCategory();
 
         TransactionEntity transaction = createTransaction(
@@ -600,11 +603,57 @@ class TransactionServiceTest {
                 new BigDecimal("100.00"),
                 LocalDate.now());
 
-        SubcategoryEntity oldSubcategory = createSubcategory(oldCategory);
+        UpdateTransactionDTO updateDTO = new UpdateTransactionDTO(
+                null,
+                null,
+                newCategory.getId(),
+                null,
+                null);
+
+        when(transactionRepository.findById(
+                transaction.getId()))
+                .thenReturn(Optional.of(transaction));
+
+        when(transactionSplitRepository
+                .findByTransactionId(transaction.getId()))
+                .thenReturn(List.of());
+
+        when(categoryRepository.findById(newCategory.getId()))
+                .thenReturn(Optional.of(newCategory));
+
+        when(transactionRepository.save(transaction))
+                .thenReturn(transaction);
+
+        TransactionResponseDTO result = transactionService.updateTransaction(
+                transaction.getId(),
+                updateDTO);
+
+        assertEquals(
+                newCategory.getId(),
+                result.categoryId());
+
+        verify(categoryRepository)
+                .findById(newCategory.getId());
+
+        verify(transactionRepository)
+                .save(transaction);
+    }
+
+    @Test
+    void shouldFailUpdateCategoryWhenTransactionHasSplits() {
+        CategoryEntity oldCategory = createCategory();
+        CategoryEntity newCategory = createCategory();
+
+        TransactionEntity transaction = createTransaction(
+                oldCategory,
+                new BigDecimal("100.00"),
+                LocalDate.now());
+
+        SubcategoryEntity subcategory = createSubcategory(oldCategory);
 
         TransactionSplitEntity split = createSplit(
                 transaction.getId(),
-                oldSubcategory,
+                subcategory,
                 new BigDecimal("50.00"));
 
         UpdateTransactionDTO updateDTO = new UpdateTransactionDTO(
@@ -618,10 +667,6 @@ class TransactionServiceTest {
                 transaction.getId()))
                 .thenReturn(Optional.of(transaction));
 
-        when(categoryRepository.findById(
-                newCategory.getId()))
-                .thenReturn(Optional.of(newCategory));
-
         when(transactionSplitRepository
                 .findByTransactionId(transaction.getId()))
                 .thenReturn(List.of(split));
@@ -631,6 +676,9 @@ class TransactionServiceTest {
                 () -> transactionService.updateTransaction(
                         transaction.getId(),
                         updateDTO));
+
+        verify(categoryRepository, never())
+                .findById(newCategory.getId());
 
         verify(transactionRepository, never())
                 .save(any());

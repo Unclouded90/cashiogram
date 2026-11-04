@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 
@@ -36,8 +37,6 @@ describe('Transactions', () => {
   const transactionServiceMock = {
     getTransactions: vi.fn(),
     createTransaction: vi.fn(),
-    updateTransaction: vi.fn(),
-    deleteTransaction: vi.fn(),
   };
 
   const categoryServiceMock = {
@@ -67,6 +66,7 @@ describe('Transactions', () => {
     await TestBed.configureTestingModule({
       imports: [Transactions],
       providers: [
+        provideRouter([]),
         {
           provide: TransactionService,
           useValue: transactionServiceMock,
@@ -98,6 +98,7 @@ describe('Transactions', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(transactionServiceMock.getTransactions).toHaveBeenCalled();
+
     expect(categoryServiceMock.getCategories).toHaveBeenCalled();
 
     expect(compiled.textContent).toContain('Groceries');
@@ -140,8 +141,8 @@ describe('Transactions', () => {
     dateInput.value = '2026-10-31';
     descriptionInput.value = 'Extra groceries';
 
-    const addButton = Array.from(compiled.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Add Transaction'),
+    const addButton = Array.from(compiled.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.includes('Add Transaction'),
     );
 
     addButton?.click();
@@ -165,87 +166,5 @@ describe('Transactions', () => {
     expect(descriptionInput.value).toBe('');
 
     expect(compiled.textContent).toContain('Extra groceries');
-  });
-
-  it('should edit and update a transaction and refresh the balance', async () => {
-    const updatedTransaction = {
-      ...transactions[0],
-      amount: 120,
-      description: 'Updated groceries',
-    };
-
-    transactionServiceMock.updateTransaction.mockReturnValue(of(updatedTransaction));
-
-    const compiled = fixture.nativeElement as HTMLElement;
-
-    const editButton = Array.from(compiled.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Edit',
-    );
-
-    editButton?.click();
-
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const editContainer = compiled.querySelector('.transaction-edit') as HTMLElement;
-
-    const amountInput = editContainer.querySelector('input[type="number"]') as HTMLInputElement;
-
-    const descriptionInput = editContainer.querySelector('input[type="text"]') as HTMLInputElement;
-
-    const dateInput = editContainer.querySelector('input[type="date"]') as HTMLInputElement;
-
-    const selects = editContainer.querySelectorAll('select');
-
-    const typeInput = selects[0] as HTMLSelectElement;
-    const categoryInput = selects[1] as HTMLSelectElement;
-
-    amountInput.value = '120';
-    descriptionInput.value = 'Updated groceries';
-
-    const saveButton = Array.from(editContainer.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Save',
-    );
-
-    saveButton?.click();
-
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(transactionServiceMock.updateTransaction).toHaveBeenCalledWith('transaction-1', {
-      amount: 120,
-      transactionType: typeInput.value,
-      categoryId: categoryInput.value,
-      date: dateInput.value,
-      description: 'Updated groceries',
-    });
-
-    expect(balanceServiceMock.getBalance).toHaveBeenCalled();
-
-    expect(compiled.textContent).toContain('Updated groceries');
-    expect(compiled.textContent).not.toContain('Monthly groceries');
-  });
-
-  it('should delete a transaction and refresh the balance', async () => {
-    transactionServiceMock.deleteTransaction.mockReturnValue(of(undefined));
-
-    const compiled = fixture.nativeElement as HTMLElement;
-
-    expect(compiled.textContent).toContain('Monthly groceries');
-
-    const deleteButton = Array.from(compiled.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Delete',
-    );
-
-    deleteButton?.click();
-
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(transactionServiceMock.deleteTransaction).toHaveBeenCalledWith('transaction-1');
-
-    expect(balanceServiceMock.getBalance).toHaveBeenCalled();
-
-    expect(compiled.textContent).not.toContain('Monthly groceries');
   });
 });

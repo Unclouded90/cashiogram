@@ -40,62 +40,17 @@
       </button>
     </div>
     @for (transaction of transactions(); track transaction.id) {
-      <app-card>
-        @if (editingTransactionId() === transaction.id) {
-          <div class="transaction-edit">
-            <input type="number" step="0.01" min="0.01" [value]="transaction.amount" #editAmount />
-
-            <select [value]="transaction.transactionType" #editType>
-              <option value="EXPENSE">Expense</option>
-              <option value="INCOME">Income</option>
-            </select>
-
-            <select [value]="transaction.categoryId" #editCategory>
-              @for (category of categories(); track category.id) {
-                <option [value]="category.id">
-                  {{ category.name }}
-                </option>
-              }
-            </select>
-
-            <input type="date" [value]="transaction.date" #editDate />
-
-            <input type="text" [value]="transaction.description ?? ''" #editDescription />
-
-            <button
-              type="button"
-              (click)="
-                updateTransaction(
-                  transaction.id,
-                  editAmount,
-                  editType,
-                  editCategory,
-                  editDate,
-                  editDescription
-                )
-              "
-            >
-              Save
-            </button>
-          </div>
-        } @else {
-          <div class="transaction-item">
-            <app-transaction-row
-              [type]="transaction.transactionType"
-              [date]="transaction.date"
-              [category]="categoryNames().get(transaction.categoryId) ?? 'Unknown Category'"
-              [description]="transaction.description"
-              [amount]="transaction.amount"
-            />
-
-            <div class="transaction-actions">
-              <button type="button" (click)="editTransaction(transaction.id)">Edit</button>
-
-              <button type="button" (click)="deleteTransaction(transaction.id)">Delete</button>
-            </div>
-          </div>
-        }
-      </app-card>
+      <a class="transaction-card-link" [routerLink]="['/transactions', transaction.id]">
+        <app-card>
+          <app-transaction-row
+            [type]="transaction.transactionType"
+            [date]="transaction.date"
+            [category]="categoryNames().get(transaction.categoryId) ?? 'Unknown Category'"
+            [description]="transaction.description"
+            [amount]="transaction.amount"
+          />
+        </app-card>
+      </a>
     }
   </div>
 </section>
