@@ -1,7 +1,9 @@
 package com.mauro.cashiogram.report;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +31,30 @@ public class ReportController {
     public ResponseEntity<PeriodTotalDTO> getPeriodTotal(
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 
-            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+
+            @RequestParam(name = "categoryIds", required = false) List<UUID> categoryIds,
+
+            @RequestParam(name = "minAmount", required = false) BigDecimal minAmount,
+
+            @RequestParam(name = "maxAmount", required = false) BigDecimal maxAmount,
+
+            @RequestParam(name = "subcategoryName", required = false) String subcategoryName,
+
+            @RequestParam(name = "minSplitAmount", required = false) BigDecimal minSplitAmount,
+
+            @RequestParam(name = "maxSplitAmount", required = false) BigDecimal maxSplitAmount) {
 
         return ResponseEntity.ok(
-                reportService.getPeriodTotal(from, to));
+                reportService.getPeriodTotal(
+                        from,
+                        to,
+                        categoryIds,
+                        minAmount,
+                        maxAmount,
+                        subcategoryName,
+                        minSplitAmount,
+                        maxSplitAmount));
     }
 
     @GetMapping("/categories")
@@ -41,13 +63,31 @@ public class ReportController {
 
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 
-            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+
+            @RequestParam(name = "categoryIds", required = false) List<UUID> categoryIds,
+
+            @RequestParam(name = "minAmount", required = false) BigDecimal minAmount,
+
+            @RequestParam(name = "maxAmount", required = false) BigDecimal maxAmount,
+
+            @RequestParam(name = "subcategoryName", required = false) String subcategoryName,
+
+            @RequestParam(name = "minSplitAmount", required = false) BigDecimal minSplitAmount,
+
+            @RequestParam(name = "maxSplitAmount", required = false) BigDecimal maxSplitAmount) {
 
         return ResponseEntity.ok(
                 reportService.getCategoryTotals(
                         transactionType,
                         from,
-                        to));
+                        to,
+                        categoryIds,
+                        minAmount,
+                        maxAmount,
+                        subcategoryName,
+                        minSplitAmount,
+                        maxSplitAmount));
     }
 
     @GetMapping("/subcategories")
@@ -56,12 +96,30 @@ public class ReportController {
 
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 
-            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+
+            @RequestParam(name = "subcategoryName", required = false) String subcategoryName,
+
+            @RequestParam(name = "categoryIds", required = false) List<UUID> categoryIds,
+
+            @RequestParam(name = "minAmount", required = false) BigDecimal minAmount,
+
+            @RequestParam(name = "maxAmount", required = false) BigDecimal maxAmount,
+
+            @RequestParam(name = "minSplitAmount", required = false) BigDecimal minSplitAmount,
+
+            @RequestParam(name = "maxSplitAmount", required = false) BigDecimal maxSplitAmount) {
 
         return ResponseEntity.ok(
                 reportService.getSubcategoryTotals(
                         transactionType,
                         from,
-                        to));
+                        to,
+                        subcategoryName,
+                        categoryIds,
+                        minAmount,
+                        maxAmount,
+                        minSplitAmount,
+                        maxSplitAmount));
     }
 }

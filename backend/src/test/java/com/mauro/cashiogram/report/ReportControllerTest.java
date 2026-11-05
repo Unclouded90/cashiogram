@@ -45,7 +45,7 @@ class ReportControllerTest {
                 new BigDecimal("850.00"),
                 new BigDecimal("1350.00"));
 
-        when(reportService.getPeriodTotal(from, to))
+        when(reportService.getPeriodTotal(from, to, null, null, null, null, null, null))
                 .thenReturn(response);
 
         mockMvc.perform(
@@ -65,7 +65,7 @@ class ReportControllerTest {
                         .value(1350.00));
 
         verify(reportService)
-                .getPeriodTotal(from, to);
+                .getPeriodTotal(from, to, null, null, null, null, null, null);
     }
 
     @Test
@@ -83,7 +83,13 @@ class ReportControllerTest {
         when(reportService.getCategoryTotals(
                 TransactionType.EXPENSE,
                 from,
-                to))
+                to,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null))
                 .thenReturn(List.of(category));
 
         mockMvc.perform(
@@ -103,7 +109,13 @@ class ReportControllerTest {
                 .getCategoryTotals(
                         TransactionType.EXPENSE,
                         from,
-                        to);
+                        to,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
     }
 
     @Test
@@ -112,16 +124,25 @@ class ReportControllerTest {
         LocalDate to = LocalDate.of(2026, 10, 31);
 
         UUID subcategoryId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
 
         SubcategoryTotalDTO subcategory = new SubcategoryTotalDTO(
                 subcategoryId,
                 "Food",
+                categoryId,
+                "Groceries",
                 new BigDecimal("250.00"));
 
         when(reportService.getSubcategoryTotals(
                 TransactionType.EXPENSE,
                 from,
-                to))
+                to,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null))
                 .thenReturn(List.of(subcategory));
 
         mockMvc.perform(
@@ -134,6 +155,10 @@ class ReportControllerTest {
                         .value(subcategoryId.toString()))
                 .andExpect(jsonPath("$[0].subcategoryName")
                         .value("Food"))
+                .andExpect(jsonPath("$[0].categoryId")
+                        .value(categoryId.toString()))
+                .andExpect(jsonPath("$[0].categoryName")
+                        .value("Groceries"))
                 .andExpect(jsonPath("$[0].total")
                         .value(250.00));
 
@@ -141,7 +166,65 @@ class ReportControllerTest {
                 .getSubcategoryTotals(
                         TransactionType.EXPENSE,
                         from,
-                        to);
+                        to,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+    }
+
+    @Test
+    void shouldGetSubcategoryTotalsByName() throws Exception {
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        UUID subcategoryId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+
+        SubcategoryTotalDTO cats = new SubcategoryTotalDTO(
+                subcategoryId,
+                "Cats",
+                categoryId,
+                "Groceries",
+                new BigDecimal("60.00"));
+
+        when(reportService.getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                null,
+                null,
+                null,
+                null,
+                null))
+                .thenReturn(List.of(cats));
+
+        mockMvc.perform(
+                get("/reports/subcategories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].subcategoryName")
+                        .value("Cats"))
+                .andExpect(jsonPath("$[0].total")
+                        .value(60.00));
+
+        verify(reportService)
+                .getSubcategoryTotals(
+                        TransactionType.EXPENSE,
+                        from,
+                        to,
+                        "cat",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
     }
 
     @Test
@@ -151,7 +234,7 @@ class ReportControllerTest {
         LocalDate from = LocalDate.of(2026, 10, 31);
         LocalDate to = LocalDate.of(2026, 10, 1);
 
-        when(reportService.getPeriodTotal(from, to))
+        when(reportService.getPeriodTotal(from, to, null, null, null, null, null, null))
                 .thenThrow(
                         new BadRequestException(
                                 "From date cannot be after to date"));
@@ -180,6 +263,327 @@ class ReportControllerTest {
         verify(reportService, never())
                 .getPeriodTotal(
                         org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
                         org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void shouldForwardMultipleCategoryIdsToAllReports() throws Exception {
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        UUID groceriesId = UUID.randomUUID();
+        UUID vetId = UUID.randomUUID();
+
+        List<UUID> categoryIds = List.of(groceriesId, vetId);
+
+        PeriodTotalDTO period = new PeriodTotalDTO(
+                from,
+                to,
+                new BigDecimal("0.00"),
+                new BigDecimal("190.00"),
+                new BigDecimal("-190.00"));
+
+        when(reportService.getPeriodTotal(from, to, categoryIds, null, null, null, null, null))
+                .thenReturn(period);
+
+        when(reportService.getCategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                categoryIds,
+                null,
+                null,
+                null,
+                null,
+                null))
+                .thenReturn(List.of());
+
+        when(reportService.getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                categoryIds,
+                null,
+                null,
+                null,
+                null))
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                get("/reports/period")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("categoryIds",
+                                groceriesId.toString(),
+                                vetId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalExpenses")
+                        .value(190.00));
+
+        mockMvc.perform(
+                get("/reports/categories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("categoryIds",
+                                groceriesId.toString(),
+                                vetId.toString()))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/reports/subcategories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat")
+                        .param("categoryIds",
+                                groceriesId.toString(),
+                                vetId.toString()))
+                .andExpect(status().isOk());
+
+        verify(reportService).getPeriodTotal(
+                from,
+                to,
+                categoryIds,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        verify(reportService).getCategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                categoryIds,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        verify(reportService).getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                categoryIds,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    @Test
+    void shouldForwardTransactionAmountFiltersToAllReports()
+            throws Exception {
+
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        BigDecimal min = new BigDecimal("50.00");
+        BigDecimal max = new BigDecimal("200.00");
+
+        PeriodTotalDTO period = new PeriodTotalDTO(
+                from,
+                to,
+                new BigDecimal("100.00"),
+                new BigDecimal("150.00"),
+                new BigDecimal("-50.00"));
+
+        when(reportService.getPeriodTotal(
+                from, to, null, min, max, null, null, null))
+                .thenReturn(period);
+
+        when(reportService.getCategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                null,
+                min,
+                max,
+                null,
+                null,
+                null))
+                .thenReturn(List.of());
+
+        when(reportService.getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                null,
+                min,
+                max,
+                null,
+                null))
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                get("/reports/period")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("minAmount", "50.00")
+                        .param("maxAmount", "200.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalExpenses").value(150.00));
+
+        mockMvc.perform(
+                get("/reports/categories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("minAmount", "50.00")
+                        .param("maxAmount", "200.00"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/reports/subcategories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat")
+                        .param("minAmount", "50.00")
+                        .param("maxAmount", "200.00"))
+                .andExpect(status().isOk());
+
+        verify(reportService).getPeriodTotal(
+                from, to, null, min, max, null, null, null);
+
+        verify(reportService).getCategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                null,
+                min,
+                max,
+                null,
+                null,
+                null);
+
+        verify(reportService).getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                null,
+                min,
+                max,
+                null,
+                null);
+    }
+
+    @Test
+    void shouldForwardSplitFiltersToAllReports() throws Exception {
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        BigDecimal minSplit = new BigDecimal("20.00");
+        BigDecimal maxSplit = new BigDecimal("100.00");
+
+        PeriodTotalDTO period = new PeriodTotalDTO(
+                from,
+                to,
+                BigDecimal.ZERO,
+                new BigDecimal("150.00"),
+                new BigDecimal("-150.00"));
+
+        when(reportService.getPeriodTotal(
+                from, to, null, null, null,
+                "cat", minSplit, maxSplit))
+                .thenReturn(period);
+
+        when(reportService.getCategoryTotals(
+                TransactionType.EXPENSE,
+                from, to, null, null, null,
+                "cat", minSplit, maxSplit))
+                .thenReturn(List.of());
+
+        when(reportService.getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from, to, "cat", null,
+                null, null, minSplit, maxSplit))
+                .thenReturn(List.of());
+
+        mockMvc.perform(
+                get("/reports/period")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat")
+                        .param("minSplitAmount", "20.00")
+                        .param("maxSplitAmount", "100.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalExpenses")
+                        .value(150.00));
+
+        mockMvc.perform(
+                get("/reports/categories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat")
+                        .param("minSplitAmount", "20.00")
+                        .param("maxSplitAmount", "100.00"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                get("/reports/subcategories")
+                        .param("type", "EXPENSE")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("subcategoryName", "cat")
+                        .param("minSplitAmount", "20.00")
+                        .param("maxSplitAmount", "100.00"))
+                .andExpect(status().isOk());
+
+        verify(reportService).getPeriodTotal(
+                from, to, null, null, null,
+                "cat", minSplit, maxSplit);
+
+        verify(reportService).getCategoryTotals(
+                TransactionType.EXPENSE,
+                from, to, null, null, null,
+                "cat", minSplit, maxSplit);
+
+        verify(reportService).getSubcategoryTotals(
+                TransactionType.EXPENSE,
+                from, to, "cat", null,
+                null, null, minSplit, maxSplit);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSplitAmountRangeIsInvalid()
+            throws Exception {
+
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        BigDecimal min = new BigDecimal("100.00");
+        BigDecimal max = new BigDecimal("50.00");
+
+        when(reportService.getPeriodTotal(
+                from, to, null, null, null,
+                null, min, max))
+                .thenThrow(new BadRequestException(
+                        "Minimum split amount cannot exceed maximum split amount"));
+
+        mockMvc.perform(
+                get("/reports/period")
+                        .param("from", "2026-10-01")
+                        .param("to", "2026-10-31")
+                        .param("minSplitAmount", "100.00")
+                        .param("maxSplitAmount", "50.00"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message")
+                        .value(
+                                "Minimum split amount cannot exceed maximum split amount"));
     }
 }

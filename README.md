@@ -15,7 +15,7 @@ The project started from a personal need for better control over transaction cat
 - Custom categories and subcategories
 - Transaction splits across multiple subcategories
 - Dynamically calculated account balance
-- Period, category and subcategory reports
+- Financial reports with category, subcategory and amount-based filtering
 - PostgreSQL persistence
 - Responsive Angular dashboard
 - Docker-based local environment
@@ -59,6 +59,28 @@ The account balance is still affected by exactly €100.
 Splits are classifications and do not represent additional financial movements.
 
 The sum of all splits cannot exceed the original transaction amount.
+
+### Financial reporting
+
+Reports support financial analysis through dynamic filtering and aggregation.
+
+Available filters include:
+
+- Date ranges
+- Multiple categories
+- Case-insensitive partial subcategory name search
+- Minimum and maximum transaction amounts
+- Minimum and maximum transaction split amounts
+
+Reports can aggregate financial data by transaction type, category or subcategory.
+
+Without split-related filters, transaction-based reports use the full transaction amounts.
+
+When filtering by subcategory name or split amount, aggregations use only the matching splits rather than the original transaction amounts.
+
+Subcategories remain distinct by ID and parent category, even when they share the same name.
+
+Reporting is analytical and does not modify transactions or account balances.
 
 ### Package-by-feature architecture
 

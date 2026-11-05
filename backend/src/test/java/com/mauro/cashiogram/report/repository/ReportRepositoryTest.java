@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ class ReportRepositoryTest {
     @Autowired
     private TransactionSplitRepository transactionSplitRepository;
 
+    private static final List<UUID> NO_CATEGORY_FILTER = List.of(new UUID(0L, 0L));
+
     @Test
     void shouldSumAmountByTypeAndPeriod() {
         CategoryEntity category = createCategory("Salary");
@@ -82,7 +85,13 @@ class ReportRepositoryTest {
         BigDecimal total = reportRepository.sumAmountByTypeAndPeriod(
                 TransactionType.INCOME,
                 LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 31));
+                LocalDate.of(2026, 10, 31),
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
 
         assertEquals(
                 0,
@@ -117,7 +126,13 @@ class ReportRepositoryTest {
         List<CategoryTotalDTO> result = reportRepository.getTotalsByCategory(
                 TransactionType.EXPENSE,
                 LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 31));
+                LocalDate.of(2026, 10, 31),
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
 
         assertEquals(2, result.size());
 
@@ -186,7 +201,18 @@ class ReportRepositoryTest {
         List<SubcategoryTotalDTO> result = reportRepository.getTotalsBySubcategory(
                 TransactionType.EXPENSE,
                 LocalDate.of(2026, 10, 1),
-                LocalDate.of(2026, 10, 31));
+                LocalDate.of(2026, 10, 31),
+                "",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
 
         assertEquals(2, result.size());
 
@@ -211,6 +237,248 @@ class ReportRepositoryTest {
                 0,
                 new BigDecimal("20.00")
                         .compareTo(result.get(1).total()));
+
+        assertEquals(
+                groceries.getId(),
+                result.get(0).categoryId());
+
+        assertEquals(
+                "Groceries",
+                result.get(0).categoryName());
+    }
+
+    @Test
+    void shouldFilterSubcategoriesByNameAcrossCategories() {
+        CategoryEntity groceries = createCategory("Groceries");
+        CategoryEntity vet = createCategory("Veterinarian Bills");
+
+        SubcategoryEntity groceriesCats = createSubcategory(
+                groceries,
+                "Cats");
+
+        SubcategoryEntity vetCats = createSubcategory(
+                vet,
+                "Cats");
+
+        SubcategoryEntity food = createSubcategory(
+                groceries,
+                "Food");
+
+        TransactionEntity groceriesTransaction = createTransaction(
+                groceries,
+                new BigDecimal("100.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 5));
+
+        TransactionEntity vetTransaction = createTransaction(
+                vet,
+                new BigDecimal("90.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 10));
+
+        createSplit(
+                groceriesTransaction,
+                groceriesCats,
+                new BigDecimal("60.00"));
+
+        createSplit(
+                groceriesTransaction,
+                food,
+                new BigDecimal("40.00"));
+
+        createSplit(
+                vetTransaction,
+                vetCats,
+                new BigDecimal("90.00"));
+
+        List<SubcategoryTotalDTO> result = reportRepository.getTotalsBySubcategory(
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 31),
+                "cAt",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(2, result.size());
+
+        assertEquals(
+                vetCats.getId(),
+                result.get(0).subcategoryId());
+
+        assertEquals(
+                vet.getId(),
+                result.get(0).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("90.00")
+                        .compareTo(result.get(0).total()));
+
+        assertEquals(
+                groceriesCats.getId(),
+                result.get(1).subcategoryId());
+
+        assertEquals(
+                groceries.getId(),
+                result.get(1).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00")
+                        .compareTo(result.get(1).total()));
+    }
+
+    @Test
+    void shouldFilterAllReportAggregatesByMultipleCategories() {
+        CategoryEntity groceries = createCategory("Groceries");
+        CategoryEntity vet = createCategory("Veterinarian Bills");
+        CategoryEntity transport = createCategory("Transport");
+
+        SubcategoryEntity groceriesCats = createSubcategory(
+                groceries,
+                "Cats");
+
+        SubcategoryEntity vetCats = createSubcategory(
+                vet,
+                "Cats");
+
+        SubcategoryEntity fuel = createSubcategory(
+                transport,
+                "Fuel");
+
+        TransactionEntity groceriesTransaction = createTransaction(
+                groceries,
+                new BigDecimal("100.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 5));
+
+        TransactionEntity vetTransaction = createTransaction(
+                vet,
+                new BigDecimal("90.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 10));
+
+        TransactionEntity transportTransaction = createTransaction(
+                transport,
+                new BigDecimal("30.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 15));
+
+        createSplit(
+                groceriesTransaction,
+                groceriesCats,
+                new BigDecimal("60.00"));
+
+        createSplit(
+                vetTransaction,
+                vetCats,
+                new BigDecimal("90.00"));
+
+        createSplit(
+                transportTransaction,
+                fuel,
+                new BigDecimal("30.00"));
+
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        List<UUID> categoryIds = List.of(
+                groceries.getId(),
+                vet.getId());
+
+        // Period totals
+
+        BigDecimal total = reportRepository.sumAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                true,
+                categoryIds,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(
+                0,
+                new BigDecimal("190.00").compareTo(total));
+
+        List<CategoryTotalDTO> categories = reportRepository.getTotalsByCategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                true,
+                categoryIds,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(2, categories.size());
+
+        assertEquals(groceries.getId(), categories.get(0).categoryId());
+        assertEquals(
+                0,
+                new BigDecimal("100.00")
+                        .compareTo(categories.get(0).total()));
+
+        assertEquals(vet.getId(), categories.get(1).categoryId());
+        assertEquals(
+                0,
+                new BigDecimal("90.00")
+                        .compareTo(categories.get(1).total()));
+
+        List<SubcategoryTotalDTO> subcategories = reportRepository.getTotalsBySubcategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                true,
+                categoryIds,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(2, subcategories.size());
+
+        assertEquals(
+                vetCats.getId(),
+                subcategories.get(0).subcategoryId());
+
+        assertEquals(
+                vet.getId(),
+                subcategories.get(0).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("90.00")
+                        .compareTo(subcategories.get(0).total()));
+
+        assertEquals(
+                groceriesCats.getId(),
+                subcategories.get(1).subcategoryId());
+
+        assertEquals(
+                groceries.getId(),
+                subcategories.get(1).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00")
+                        .compareTo(subcategories.get(1).total()));
     }
 
     // Helper methods
@@ -264,5 +532,414 @@ class ReportRepositoryTest {
         split.setAmount(amount);
 
         return transactionSplitRepository.save(split);
+    }
+
+    @Test
+    void shouldFilterReportsByTransactionAmountRange() {
+        CategoryEntity groceries = createCategory("Groceries");
+
+        SubcategoryEntity cats = createSubcategory(
+                groceries,
+                "Cats");
+
+        TransactionEntity small = createTransaction(
+                groceries,
+                new BigDecimal("30.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 5));
+
+        TransactionEntity lowerBound = createTransaction(
+                groceries,
+                new BigDecimal("90.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 10));
+
+        TransactionEntity upperBound = createTransaction(
+                groceries,
+                new BigDecimal("100.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 15));
+
+        TransactionEntity large = createTransaction(
+                groceries,
+                new BigDecimal("250.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 20));
+
+        createSplit(small, cats, new BigDecimal("10.00"));
+        createSplit(lowerBound, cats, new BigDecimal("50.00"));
+        createSplit(upperBound, cats, new BigDecimal("60.00"));
+        createSplit(large, cats, new BigDecimal("70.00"));
+
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        BigDecimal min = new BigDecimal("90.00");
+        BigDecimal max = new BigDecimal("100.00");
+
+        BigDecimal periodTotal = reportRepository.sumAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                false,
+                NO_CATEGORY_FILTER,
+                true,
+                min,
+                true,
+                max);
+
+        assertEquals(
+                0,
+                new BigDecimal("190.00").compareTo(periodTotal));
+
+        List<CategoryTotalDTO> categories = reportRepository.getTotalsByCategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                false,
+                NO_CATEGORY_FILTER,
+                true,
+                min,
+                true,
+                max);
+
+        assertEquals(1, categories.size());
+        assertEquals(groceries.getId(), categories.get(0).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("190.00")
+                        .compareTo(categories.get(0).total()));
+
+        List<SubcategoryTotalDTO> subcategories = reportRepository.getTotalsBySubcategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                false,
+                NO_CATEGORY_FILTER,
+                true,
+                min,
+                true,
+                max,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(1, subcategories.size());
+        assertEquals(cats.getId(), subcategories.get(0).subcategoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("110.00")
+                        .compareTo(subcategories.get(0).total()));
+
+        BigDecimal minOnly = reportRepository.sumAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                false,
+                NO_CATEGORY_FILTER,
+                true,
+                new BigDecimal("100.00"),
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(
+                0,
+                new BigDecimal("350.00").compareTo(minOnly));
+
+        BigDecimal maxOnly = reportRepository.sumAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                true,
+                new BigDecimal("90.00"));
+
+        assertEquals(
+                0,
+                new BigDecimal("120.00").compareTo(maxOnly));
+    }
+
+    @Test
+    void shouldAggregateOnlyMatchingSplitsAcrossCategories() {
+        CategoryEntity groceries = createCategory("Groceries");
+        CategoryEntity vet = createCategory("Veterinarian Bills");
+        CategoryEntity transport = createCategory("Transport");
+
+        SubcategoryEntity groceriesCats = createSubcategory(groceries, "Cats");
+
+        SubcategoryEntity groceriesFood = createSubcategory(groceries, "Food");
+
+        SubcategoryEntity vetCats = createSubcategory(vet, "Cats");
+
+        SubcategoryEntity checkup = createSubcategory(vet, "Checkup");
+
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        LocalDate to = LocalDate.of(2026, 10, 31);
+
+        TransactionEntity groceriesTransaction = createTransaction(
+                groceries,
+                new BigDecimal("100.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 5));
+
+        TransactionEntity vetTransaction = createTransaction(
+                vet,
+                new BigDecimal("200.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 10));
+
+        createTransaction(
+                transport,
+                new BigDecimal("50.00"),
+                TransactionType.EXPENSE,
+                LocalDate.of(2026, 10, 15));
+
+        createSplit(
+                groceriesTransaction,
+                groceriesCats,
+                new BigDecimal("60.00"));
+
+        createSplit(
+                groceriesTransaction,
+                groceriesFood,
+                new BigDecimal("30.00"));
+
+        createSplit(
+                vetTransaction,
+                vetCats,
+                new BigDecimal("90.00"));
+
+        createSplit(
+                vetTransaction,
+                checkup,
+                new BigDecimal("40.00"));
+
+        BigDecimal minSplit = new BigDecimal("50.00");
+        BigDecimal maxSplit = new BigDecimal("100.00");
+
+        BigDecimal fullTotal = reportRepository.sumAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(
+                0,
+                new BigDecimal("350.00").compareTo(fullTotal));
+
+        BigDecimal filteredTotal = reportRepository.sumFilteredSplitAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cAt",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                minSplit,
+                true,
+                maxSplit);
+
+        assertEquals(
+                0,
+                new BigDecimal("150.00").compareTo(filteredTotal));
+
+        List<CategoryTotalDTO> categories = reportRepository.getFilteredSplitTotalsByCategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cAt",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                minSplit,
+                true,
+                maxSplit);
+
+        assertEquals(2, categories.size());
+
+        assertEquals(
+                vet.getId(),
+                categories.get(0).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("90.00")
+                        .compareTo(categories.get(0).total()));
+
+        assertEquals(
+                groceries.getId(),
+                categories.get(1).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00")
+                        .compareTo(categories.get(1).total()));
+
+        List<SubcategoryTotalDTO> subcategories = reportRepository.getTotalsBySubcategory(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cAt",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                minSplit,
+                true,
+                maxSplit);
+
+        assertEquals(2, subcategories.size());
+
+        assertEquals(
+                vetCats.getId(),
+                subcategories.get(0).subcategoryId());
+
+        assertEquals(
+                vet.getId(),
+                subcategories.get(0).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("90.00")
+                        .compareTo(subcategories.get(0).total()));
+
+        assertEquals(
+                groceriesCats.getId(),
+                subcategories.get(1).subcategoryId());
+
+        assertEquals(
+                groceries.getId(),
+                subcategories.get(1).categoryId());
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00")
+                        .compareTo(subcategories.get(1).total()));
+
+        BigDecimal withoutNameFilter = reportRepository.sumFilteredSplitAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                new BigDecimal("25.00"),
+                true,
+                maxSplit);
+
+        assertEquals(
+                0,
+                new BigDecimal("220.00")
+                        .compareTo(withoutNameFilter));
+
+        BigDecimal combinedTotal = reportRepository.sumFilteredSplitAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                true,
+                new BigDecimal("150.00"),
+                true,
+                minSplit,
+                true,
+                maxSplit);
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00")
+                        .compareTo(combinedTotal));
+
+        BigDecimal noMatches = reportRepository.sumFilteredSplitAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                false,
+                NO_CATEGORY_FILTER,
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                new BigDecimal("300.00"),
+                false,
+                BigDecimal.ZERO);
+
+        assertEquals(
+                0,
+                BigDecimal.ZERO.compareTo(noMatches));
+
+        BigDecimal groceriesOnly = reportRepository.sumFilteredSplitAmountByTypeAndPeriod(
+                TransactionType.EXPENSE,
+                from,
+                to,
+                "cat",
+                true,
+                List.of(groceries.getId()),
+                false,
+                BigDecimal.ZERO,
+                false,
+                BigDecimal.ZERO,
+                true,
+                minSplit,
+                true,
+                maxSplit);
+
+        assertEquals(
+                0,
+                new BigDecimal("60.00").compareTo(groceriesOnly));
+
+        List<CategoryTotalDTO> emptyCategories = reportRepository.getFilteredSplitTotalsByCategory(
+                TransactionType.EXPENSE,
+                from, to, "cat",
+                false, NO_CATEGORY_FILTER,
+                false, BigDecimal.ZERO,
+                false, BigDecimal.ZERO,
+                true, new BigDecimal("300.00"),
+                false, BigDecimal.ZERO);
+
+        List<SubcategoryTotalDTO> emptySubcategories = reportRepository.getTotalsBySubcategory(
+                TransactionType.EXPENSE,
+                from, to, "cat",
+                false, NO_CATEGORY_FILTER,
+                false, BigDecimal.ZERO,
+                false, BigDecimal.ZERO,
+                true, new BigDecimal("300.00"),
+                false, BigDecimal.ZERO);
+
+        assertEquals(0, emptyCategories.size());
+        assertEquals(0, emptySubcategories.size());
     }
 }
