@@ -1,0 +1,385 @@
+<main class="reports-page">
+  <app-card>
+    <section class="reports">
+      <a routerLink="/" class="back-button">← Back to Dashboard</a>
+
+      <header class="reports-header">
+        <h1>Financial Reports</h1>
+        <p>Analyze your income and expenses.</p>
+      </header>
+
+      <details class="filters" open>
+        <summary>Filters</summary>
+
+        <div class="filters-content">
+          <div class="filters-grid">
+            <div class="date-field">
+              <label for="report-from">From</label>
+              <input
+                id="report-from"
+                type="date"
+                [value]="from()"
+                (change)="from.set(fromInput.value)"
+                #fromInput
+              />
+            </div>
+
+            <div class="date-field">
+              <label for="report-to">To</label>
+              <input
+                id="report-to"
+                type="date"
+                [value]="to()"
+                (change)="to.set(toInput.value)"
+                #toInput
+              />
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h3>Categories</h3>
+            <p class="filter-help">Leave all unchecked to include every category.</p>
+
+            @if (categoryLoadError()) {
+              <p class="error" role="alert">{{ categoryLoadError() }}</p>
+            } @else {
+              <div class="category-options">
+                @for (category of categories(); track category.id) {
+                  <label class="category-option">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedCategoryIds().includes(category.id)"
+                      (change)="toggleCategory(category.id, categoryInput.checked)"
+                      #categoryInput
+                    />
+
+                    <span>{{ category.name }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="filter-section">
+            <h3>Transaction Amount</h3>
+
+            <div class="filters-grid">
+              <div class="date-field">
+                <label for="report-min-amount">Minimum</label>
+                <input
+                  id="report-min-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  [value]="minAmountInput()"
+                  (input)="minAmountInput.set(minAmount.value)"
+                  #minAmount
+                />
+              </div>
+
+              <div class="date-field">
+                <label for="report-max-amount">Maximum</label>
+                <input
+                  id="report-max-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="No maximum"
+                  [value]="maxAmountInput()"
+                  (input)="maxAmountInput.set(maxAmount.value)"
+                  #maxAmount
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h3>Split Analysis</h3>
+
+            <div class="date-field">
+              <label for="report-subcategory-name">Subcategory Name</label>
+
+              <input
+                id="report-subcategory-name"
+                type="text"
+                placeholder="Search by name (e.g. cat)"
+                [value]="subcategoryName()"
+                (input)="subcategoryName.set(subcategoryInput.value)"
+                #subcategoryInput
+              />
+
+              <p class="filter-help">
+                Matches subcategories across all categories, without merging their IDs.
+              </p>
+            </div>
+
+            <div class="filters-grid">
+              <div class="date-field">
+                <label for="report-min-split">Minimum Split Amount</label>
+                <input
+                  id="report-min-split"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  [value]="minSplitAmountInput()"
+                  (input)="minSplitAmountInput.set(minSplit.value)"
+                  #minSplit
+                />
+              </div>
+
+              <div class="date-field">
+                <label for="report-max-split">Maximum Split Amount</label>
+                <input
+                  id="report-max-split"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="No maximum"
+                  [value]="maxSplitAmountInput()"
+                  (input)="maxSplitAmountInput.set(maxSplit.value)"
+                  #maxSplit
+                />
+              </div>
+            </div>
+          </div>
+
+          @if (filterError(); as message) {
+            <p class="validation-error" role="alert">{{ message }}</p>
+          }
+
+          <div class="filter-actions">
+            <button
+              type="button"
+              [disabled]="loading() || !!filterError()"
+              (click)="applyFilters()"
+            >
+              Apply Filters
+            </button>
+
+            <button type="button" class="clear-button" (click)="clearAdvancedFilters()">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </details>
+
+      <section class="report-chart">
+        <header>
+          <h2>Financial Distribution</h2>
+        </header>
+
+        <div class="chart-controls">
+          <div class="chart-control">
+            <label for="report-group-by">Group by</label>
+
+            <select
+              id="report-group-by"
+              [value]="groupBy()"
+              (change)="changeGroupBy(groupInput.value)"
+              #groupInput
+            >
+              <option value="TYPE">Transaction Type</option>
+              <option value="CATEGORY">Category</option>
+              <option value="SUBCATEGORY">Subcategory</option>
+            </select>
+          </div>
+
+          @if (groupBy() !== 'TYPE') {
+            <div class="chart-control">
+              <label for="report-transaction-type">Transaction Type</label>
+
+              <select
+                id="report-transaction-type"
+                [value]="selectedType()"
+                (change)="changeTransactionType(typeInput.value)"
+                #typeInput
+              >
+                <option value="EXPENSE">Expenses</option>
+                <option value="INCOME">Income</option>
+              </select>
+            </div>
+          }
+        </div>
+
+        @if (loading()) {
+          <p role="status">Loading reports...</p>
+        } @else if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        } @else if (periodTotal()) {
+          @if (chartSlices().length > 0) {
+            <div class="chart-content">
+              <div
+                class="pie-chart"
+                role="img"
+                aria-label="Financial distribution pie chart"
+                [style.background]="chartBackground()"
+              ></div>
+
+              <div class="chart-details">
+                <div class="chart-total">
+                  <span>Total Analyzed</span>
+                  <strong>{{ formatCurrency(chartTotal()) }}</strong>
+                </div>
+
+                <ul class="chart-legend">
+                  @for (slice of chartSlices(); track slice.key) {
+                    <li class="legend-item">
+                      <span class="legend-color" [style.backgroundColor]="slice.color"></span>
+
+                      <span class="legend-label">{{ slice.label }}</span>
+
+                      <strong class="legend-value">
+                        {{ formatCurrency(slice.amount) }}
+                      </strong>
+
+                      <span class="legend-percentage">
+                        {{ formatPercentage(slice.percentage) }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          } @else {
+            <p class="chart-empty">No financial data for the selected period.</p>
+          }
+        }
+      </section>
+
+      @if (!loading() && !error()) {
+        @if (periodTotal(); as period) {
+          <section class="period-summary">
+            <h2>Filtered Summary</h2>
+
+            @if (
+              appliedFilters()?.subcategoryName ||
+              appliedFilters()?.minSplitAmount !== undefined ||
+              appliedFilters()?.maxSplitAmount !== undefined
+            ) {
+              <p class="filter-help">
+                Totals reflect matching transaction splits only, not the complete transaction
+                amounts.
+              </p>
+            }
+
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span>Income</span>
+                <strong class="income">
+                  {{ formatCurrency(period.totalIncome) }}
+                </strong>
+              </div>
+
+              <div class="summary-item">
+                <span>Expenses</span>
+                <strong class="expense">
+                  {{ formatCurrency(period.totalExpenses) }}
+                </strong>
+              </div>
+
+              <div class="summary-item">
+                <span>Net Result</span>
+                <strong>
+                  {{ formatCurrency(period.netTotal) }}
+                </strong>
+              </div>
+            </div>
+          </section>
+        }
+      }
+
+      <section class="financial-breakdown">
+        <header class="breakdown-header">
+          <h2>Financial Breakdown</h2>
+
+          <p>
+            Complete financial activity from {{ appliedFilters()?.from }} to
+            {{ appliedFilters()?.to }}.
+          </p>
+
+          <p class="filter-help">This breakdown is independent of the chart filters.</p>
+        </header>
+
+        @if (breakdownLoading()) {
+          <p role="status">Loading financial breakdown...</p>
+        } @else if (breakdownError()) {
+          <p class="error" role="alert">{{ breakdownError() }}</p>
+        } @else if (breakdownData()) {
+          @if (breakdownRows().length === 0) {
+            <p class="breakdown-empty">No transactions for the selected period.</p>
+          } @else {
+            <div class="breakdown-scroll">
+              <table class="breakdown-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Category / Subcategory</th>
+                    <th scope="col">Income</th>
+                    <th scope="col">Expenses</th>
+                    <th scope="col">Net</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  @for (category of breakdownRows(); track category.id) {
+                    <tr class="breakdown-category-row">
+                      <th scope="row">
+                        <button
+                          type="button"
+                          class="breakdown-toggle"
+                          [attr.aria-expanded]="expandedCategoryIds().includes(category.id)"
+                          (click)="toggleBreakdownCategory(category.id)"
+                        >
+                          <span aria-hidden="true">
+                            {{ expandedCategoryIds().includes(category.id) ? '▾' : '▸' }}
+                          </span>
+
+                          {{ category.name }}
+                        </button>
+                      </th>
+
+                      <td>{{ formatCurrency(category.income) }}</td>
+                      <td>{{ formatCurrency(category.expense) }}</td>
+                      <td>{{ formatCurrency(category.income - category.expense) }}</td>
+                    </tr>
+
+                    @if (expandedCategoryIds().includes(category.id)) {
+                      @for (subcategory of category.subcategories; track subcategory.id) {
+                        <tr class="breakdown-subcategory-row">
+                          <th scope="row">
+                            <span
+                              class="subcategory-name"
+                              [class.unallocated]="subcategory.isUnallocated"
+                            >
+                              {{ subcategory.name }}
+                            </span>
+                          </th>
+
+                          <td>{{ formatCurrency(subcategory.income) }}</td>
+                          <td>{{ formatCurrency(subcategory.expense) }}</td>
+                          <td>
+                            {{ formatCurrency(subcategory.income - subcategory.expense) }}
+                          </td>
+                        </tr>
+                      }
+                    }
+                  }
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <th scope="row">TOTAL</th>
+                    <td>{{ formatCurrency(breakdownTotals().income) }}</td>
+                    <td>{{ formatCurrency(breakdownTotals().expense) }}</td>
+                    <td>{{ formatCurrency(breakdownTotals().net) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        }
+      </section>
+    </section>
+  </app-card>
+</main>

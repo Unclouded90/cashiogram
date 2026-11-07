@@ -5,6 +5,7 @@ import { AccountSettings } from './features/account/account-settings/account-set
 import { Categories } from './features/categories/categories';
 import { CategoryDetails } from './features/categories/category-details/category-details';
 import { TransactionDetails } from './features/transactions/transaction-details/transaction-details';
+import { Reports } from './features/reports/reports';
 
 export const routes: Routes = [
   {
@@ -26,5 +27,9 @@ export const routes: Routes = [
   {
     path: 'transactions/:transactionId',
     component: TransactionDetails,
+  },
+  {
+    path: 'reports',
+    component: Reports,
   },
 ];

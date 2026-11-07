@@ -36,3 +36,14 @@
     justify-self: start;
   }
 }
+
+.dashboard-navigation {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+
+  a {
+    color: inherit;
+    text-underline-offset: 0.2rem;
+  }
+}

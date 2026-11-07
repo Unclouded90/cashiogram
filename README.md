@@ -4,7 +4,9 @@ Cashiogram is a personal finance management application built with Java, Spring 
 
 The project started from a personal need for better control over transaction categorization than what is typically available in banking applications. It is also used as a practical project for experimenting with backend architecture, persistence, testing and frontend development.
 
-> The backend and persistence layers are implemented. The Angular frontend is currently being developed, with the dashboard, account management, balance integration, categories, subcategories, transactions and transaction split management already available.
+> The backend and persistence layers are implemented. The Angular frontend includes a responsive dashboard, account management, balance integration, categories, subcategories, transactions, transaction split management and interactive financial reports.
+
+All core V1.0 features are implemented. The project is currently undergoing final code cleanup, UI/UX polishing and release validation.
 
 ---
 
@@ -15,7 +17,8 @@ The project started from a personal need for better control over transaction cat
 - Custom categories and subcategories
 - Transaction splits across multiple subcategories
 - Dynamically calculated account balance
-- Financial reports with category, subcategory and amount-based filtering
+- Interactive financial reports with advanced filtering and dynamic pie charts
+- Financial breakdown by category and subcategory, including income, expenses and unallocated amounts
 - PostgreSQL persistence
 - Responsive Angular dashboard
 - Docker-based local environment
@@ -62,7 +65,7 @@ The sum of all splits cannot exceed the original transaction amount.
 
 ### Financial reporting
 
-Reports support financial analysis through dynamic filtering and aggregation.
+Reports provide interactive financial analysis through dynamic filtering, aggregation and visualizations.
 
 Available filters include:
 
@@ -72,13 +75,25 @@ Available filters include:
 - Minimum and maximum transaction amounts
 - Minimum and maximum transaction split amounts
 
-Reports can aggregate financial data by transaction type, category or subcategory.
+Reports support three visualization modes:
+
+- **Transaction Type:** income versus expenses
+- **Category:** distribution of income or expenses across categories
+- **Subcategory:** distribution across subcategories, including unallocated amounts when analyzing the complete allocation
+
+A dynamic pie chart displays the percentage and amount represented by each group.
 
 Without split-related filters, transaction-based reports use the full transaction amounts.
 
-When filtering by subcategory name or split amount, aggregations use only the matching splits rather than the original transaction amounts.
+When filtering by subcategory name or split amount, aggregations use only matching splits rather than the original transaction amounts.
 
 Subcategories remain distinct by ID and parent category, even when they share the same name.
+
+The **Financial Breakdown** provides a complete view of income, expenses and net results for the selected period.
+
+Categories can be expanded to display their subcategories and any unallocated amounts. The breakdown is independent of the chart's analytical filters, ensuring that the complete financial activity remains visible.
+
+Unallocated amounts represent the difference between transaction amounts and their actual split allocations. Splits excluded by analytical filters are never treated as unallocated.
 
 Reporting is analytical and does not modify transactions or account balances.
 
@@ -118,6 +133,14 @@ Category management uses dedicated detail views where categories and their assoc
 Transaction management follows the same detail-view approach. Each transaction has a dedicated view where it can be updated or deleted and where its amount can be analytically allocated across subcategories using transaction splits.
 
 Split creation, updates and deletion immediately update the local transaction state without affecting the account balance, since splits only classify an existing financial movement.
+
+Financial reports use Angular Signals and computed state to manage filters, chart data, percentages and category breakdowns.
+
+The Reports feature consumes dedicated backend aggregation endpoints through an Angular HTTP service.
+
+Analytical filters affect the chart and its summary, while the Financial Breakdown independently loads complete category and subcategory totals for the selected period.
+
+Loading states, API errors and retry behaviour are handled independently for report visualizations and the financial breakdown.
 
 This keeps components independent from each other while allowing related features to stay synchronized.
 
@@ -339,8 +362,52 @@ Frontend
 ├── Categories                ✅
 ├── Subcategories             ✅
 ├── Transaction Splits        ✅
-└── Reports                   ⏳
+└── Reports                   ✅
 ```
+
+## V1.0 Status
+
+```text
+Backend
+├── Account                   ✅
+├── Categories                ✅
+├── Subcategories             ✅
+├── Transactions              ✅
+├── Transaction Splits        ✅
+├── Balance                   ✅
+└── Reports                   ✅
+
+Persistence
+├── PostgreSQL                ✅
+├── Flyway                    ✅
+└── Repository Tests          ✅
+
+Infrastructure
+├── Docker Environment        ✅
+├── Backend CI                ✅
+└── Frontend CI               ✅
+
+Frontend
+├── Angular Infrastructure    ✅
+├── Responsive Dashboard      ✅
+├── Account Management        ✅
+├── Balance Integration       ✅
+├── Transactions              ✅
+├── Categories                ✅
+├── Subcategories             ✅
+├── Transaction Splits        ✅
+└── Reports                   ✅
+```
+
+### Remaining before V1.0 release
+
+- Code cleanup and refactoring
+- Consistent UI styling and component design
+- Light and dark theme support
+- Responsive layout and UX improvements
+- Final test suite and production build validation
+- Docker environment verification
+- V1.0 release preparation
 
 ---
 

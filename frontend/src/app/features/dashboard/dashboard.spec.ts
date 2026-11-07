@@ -94,4 +94,13 @@ describe('Dashboard', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should provide navigation to financial reports', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const link = compiled.querySelector<HTMLAnchorElement>('a[href="/reports"]');
+
+    expect(link).toBeTruthy();
+    expect(link?.textContent?.trim()).toBe('Financial Reports');
+  });
 });
