@@ -2,12 +2,67 @@
   <header class="transactions-header">
     <h2>Transactions</h2>
 
-    <div class="transactions-actions">
-      <button type="button">Filters</button>
-      <button type="button">List</button>
-      <button type="button">Grid</button>
-    </div>
+    <button
+      type="button"
+      class="transactions-filters-toggle"
+      [attr.aria-expanded]="filtersOpen()"
+      aria-controls="transaction-filters"
+      (click)="toggleFilters()"
+    >
+      Filters
+    </button>
   </header>
+
+  @if (filtersOpen()) {
+    <div id="transaction-filters" class="transaction-filters">
+      <div class="transaction-filter-field">
+        <label for="transaction-filter-type">Type</label>
+
+        <select
+          id="transaction-filter-type"
+          [value]="filterType()"
+          (change)="changeFilterType(filterTypeInput.value)"
+          #filterTypeInput
+        >
+          <option value="ALL">All</option>
+          <option value="INCOME">Income</option>
+          <option value="EXPENSE">Expense</option>
+        </select>
+      </div>
+
+      <div class="transaction-filter-field">
+        <label for="transaction-filter-from">From</label>
+
+        <input
+          id="transaction-filter-from"
+          type="date"
+          [value]="filterFrom()"
+          (change)="filterFrom.set(fromFilterInput.value)"
+          #fromFilterInput
+        />
+      </div>
+
+      <div class="transaction-filter-field">
+        <label for="transaction-filter-to">To</label>
+
+        <input
+          id="transaction-filter-to"
+          type="date"
+          [value]="filterTo()"
+          (change)="filterTo.set(toFilterInput.value)"
+          #toFilterInput
+        />
+      </div>
+
+      <button type="button" class="clear-filters-button" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+
+    @if (invalidFilterPeriod()) {
+      <p class="filter-error" role="alert">From date cannot be after To date.</p>
+    }
+  }
 
   <div class="transactions-content">
     <div class="transaction-form">
@@ -39,7 +94,7 @@
         Add Transaction
       </button>
     </div>
-    @for (transaction of transactions(); track transaction.id) {
+    @for (transaction of filteredTransactions(); track transaction.id) {
       <a class="transaction-card-link" [routerLink]="['/transactions', transaction.id]">
         <app-card>
           <app-transaction-row
@@ -51,6 +106,10 @@
           />
         </app-card>
       </a>
+    } @empty {
+      @if (!invalidFilterPeriod()) {
+        <p class="transactions-empty">No transactions match the selected filters.</p>
+      }
     }
   </div>
 </section>

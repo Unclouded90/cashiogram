@@ -9,6 +9,8 @@ import { TransactionRow } from './transaction-row/transaction-row';
 import { TransactionService } from './transaction.service';
 import { BalanceService } from '../balance/balance.service';
 
+type TransactionFilterType = 'ALL' | 'INCOME' | 'EXPENSE';
+
 @Component({
   selector: 'app-transactions',
   imports: [Card, RouterLink, TransactionRow],
@@ -22,6 +24,38 @@ export class Transactions implements OnInit {
 
   protected readonly transactions = signal<Transaction[]>([]);
   protected readonly categories = signal<Category[]>([]);
+
+  protected readonly filtersOpen = signal(false);
+
+  protected readonly filterType = signal<TransactionFilterType>('ALL');
+  protected readonly filterFrom = signal('');
+  protected readonly filterTo = signal('');
+
+  protected readonly invalidFilterPeriod = computed(
+    () => !!this.filterFrom() && !!this.filterTo() && this.filterFrom() > this.filterTo(),
+  );
+
+  protected readonly filteredTransactions = computed(() => {
+    if (this.invalidFilterPeriod()) {
+      return [];
+    }
+
+    return this.transactions().filter((transaction) => {
+      if (this.filterType() !== 'ALL' && transaction.transactionType !== this.filterType()) {
+        return false;
+      }
+
+      if (this.filterFrom() && transaction.date < this.filterFrom()) {
+        return false;
+      }
+
+      if (this.filterTo() && transaction.date > this.filterTo()) {
+        return false;
+      }
+
+      return true;
+    });
+  });
 
   protected readonly categoryNames = computed(() => {
     return new Map(this.categories().map((category) => [category.id, category.name]));
@@ -39,6 +73,20 @@ export class Transactions implements OnInit {
         this.categories.set(categories);
       },
     });
+  }
+
+  protected changeFilterType(value: string): void {
+    this.filterType.set(value as TransactionFilterType);
+  }
+
+  protected toggleFilters(): void {
+    this.filtersOpen.update((open) => !open);
+  }
+
+  protected clearFilters(): void {
+    this.filterType.set('ALL');
+    this.filterFrom.set('');
+    this.filterTo.set('');
   }
 
   protected createTransaction(

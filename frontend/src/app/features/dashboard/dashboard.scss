@@ -10,30 +10,14 @@
 }
 
 .dashboard-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-}
-
-.dashboard-header app-options {
-  justify-self: end;
+  justify-content: center;
 }
 
 @media (max-width: 600px) {
   .dashboard {
     padding: 1rem;
-  }
-
-  .dashboard-header {
-    grid-template-columns: 1fr auto;
-  }
-
-  .dashboard-header > div {
-    display: none;
-  }
-
-  .dashboard-header h1 {
-    justify-self: start;
   }
 }
 

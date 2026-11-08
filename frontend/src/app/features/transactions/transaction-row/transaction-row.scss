@@ -11,11 +11,11 @@
   line-height: 1;
 
   &.income {
-    color: #16a34a;
+    color: var(--color-income);
   }
 
   &.expense {
-    color: #dc2626;
+    color: var(--color-expense);
   }
 }
 

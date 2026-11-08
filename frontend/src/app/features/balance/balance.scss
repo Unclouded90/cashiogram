@@ -7,8 +7,11 @@
 
 .balance-label {
   font-size: 0.9rem;
+  color: var(--color-text-muted);
 }
 
 .balance-value {
   font-size: 2rem;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }

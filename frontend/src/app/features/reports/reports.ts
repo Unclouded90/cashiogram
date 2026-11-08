@@ -13,6 +13,7 @@ import {
 import { Category } from '../categories/category.model';
 import { CategoryService } from '../categories/category.service';
 import { ReportService } from './report.service';
+import { ThemeService } from '../../core/theme/theme.service';
 
 type ReportGroupBy = 'TYPE' | 'CATEGORY' | 'SUBCATEGORY';
 
@@ -60,16 +61,10 @@ export class Reports implements OnInit, OnDestroy {
 
   private request?: Subscription;
 
-  private readonly colors = [
-    '#3b82f6',
-    '#10b981',
-    '#f59e0b',
-    '#8b5cf6',
-    '#ef4444',
-    '#06b6d4',
-    '#ec4899',
-    '#84cc16',
-  ];
+  private readonly colors = {
+    light: ['#657781', '#b78253', '#647c6c', '#947d9b', '#bf7d76', '#8199aa', '#8c9458', '#b18b6d'],
+    dark: ['#f59a45', '#4d96d7', '#e6b15f', '#6cb6d4', '#f47b58', '#a78bfa', '#3fc5b0', '#d872a0'],
+  } as const;
 
   private readonly currencyFormatter = new Intl.NumberFormat('pt-PT', {
     style: 'currency',
@@ -79,6 +74,8 @@ export class Reports implements OnInit, OnDestroy {
   private readonly percentageFormatter = new Intl.NumberFormat('pt-PT', {
     maximumFractionDigits: 1,
   });
+
+  private readonly themeService = inject(ThemeService);
 
   protected readonly from = signal(
     this.formatDate(new Date(this.today.getFullYear(), this.today.getMonth(), 1)),
@@ -173,10 +170,12 @@ export class Reports implements OnInit, OnDestroy {
     const positiveRows = rows.filter((row) => row.amount > 0);
     const total = positiveRows.reduce((sum, row) => sum + row.amount, 0);
 
+    const palette = this.colors[this.themeService.theme()];
+
     return positiveRows.map((row, index) => ({
       ...row,
       percentage: (row.amount / total) * 100,
-      color: this.colors[index % this.colors.length],
+      color: palette[index % palette.length],
     }));
   });
 
@@ -184,24 +183,46 @@ export class Reports implements OnInit, OnDestroy {
     this.chartSlices().reduce((sum, slice) => sum + slice.amount, 0),
   );
 
-  protected readonly chartBackground = computed(() => {
+  protected readonly piePaths = computed(() => {
     const slices = this.chartSlices();
     const total = this.chartTotal();
 
-    if (total === 0) {
-      return '';
+    if (slices.length <= 1 || total === 0) {
+      return [];
     }
 
-    let position = 0;
+    const center = 100;
+    const radius = 96;
 
-    const stops = slices.map((slice) => {
-      const start = position;
-      position += (slice.amount / total) * 100;
+    let angle = -90;
 
-      return `${slice.color} ${start}% ${position}%`;
+    return slices.map((slice) => {
+      const startAngle = angle;
+      const sweep = (slice.amount / total) * 360;
+
+      angle += sweep;
+
+      const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+      const startX = center + radius * Math.cos(toRadians(startAngle));
+      const startY = center + radius * Math.sin(toRadians(startAngle));
+
+      const endX = center + radius * Math.cos(toRadians(angle));
+      const endY = center + radius * Math.sin(toRadians(angle));
+
+      const largeArc = sweep > 180 ? 1 : 0;
+
+      return {
+        key: slice.key,
+        color: slice.color,
+        path: `
+        M ${center} ${center}
+        L ${startX} ${startY}
+        A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}
+        Z
+      `,
+      };
     });
-
-    return `conic-gradient(${stops.join(', ')})`;
   });
 
   protected readonly filterError = computed(() => {

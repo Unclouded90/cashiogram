@@ -210,12 +210,26 @@
         } @else if (periodTotal()) {
           @if (chartSlices().length > 0) {
             <div class="chart-content">
-              <div
+              <svg
                 class="pie-chart"
+                viewBox="0 0 200 200"
                 role="img"
                 aria-label="Financial distribution pie chart"
-                [style.background]="chartBackground()"
-              ></div>
+              >
+                @if (chartSlices().length === 1) {
+                  <circle
+                    class="pie-slice"
+                    cx="100"
+                    cy="100"
+                    r="96"
+                    [attr.fill]="chartSlices()[0].color"
+                  />
+                } @else {
+                  @for (slice of piePaths(); track slice.key) {
+                    <path class="pie-slice" [attr.d]="slice.path" [attr.fill]="slice.color" />
+                  }
+                }
+              </svg>
 
               <div class="chart-details">
                 <div class="chart-total">

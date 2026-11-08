@@ -1,5 +1,5 @@
 .report-chart {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.75rem;
   padding: 1.5rem;
 
@@ -28,9 +28,9 @@
   select {
     min-width: 180px;
     padding: 0.6rem 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-subtle);
     border-radius: 0.5rem;
-    background: #fff;
+    background: var(--color-input-bg);
   }
 }
 
@@ -44,8 +44,14 @@
 .pie-chart {
   width: 260px;
   aspect-ratio: 1;
-  border-radius: 50%;
   flex-shrink: 0;
+  overflow: visible;
+}
+
+.pie-slice {
+  stroke: #080808;
+  stroke-width: 1px;
+  stroke-linejoin: round;
 }
 
 .chart-details {
@@ -61,7 +67,7 @@
   margin-bottom: 1.5rem;
 
   span {
-    color: #777;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
   }
 
@@ -106,13 +112,13 @@
 .legend-percentage {
   width: 48px;
   text-align: right;
-  color: #777;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .chart-empty {
   text-align: center;
-  color: #777;
+  color: var(--color-text-muted);
   padding: 2rem 0;
 }
 
@@ -177,7 +183,7 @@
 
 .filter-help {
   margin: 0;
-  color: #777;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
@@ -193,7 +199,7 @@
   gap: 0.5rem;
   cursor: pointer;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.5rem;
 
   input {
@@ -211,7 +217,7 @@
 .clear-button {
   background: transparent;
   color: inherit;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-subtle);
 }
 
 @media (max-width: 600px) {
@@ -225,7 +231,7 @@
 }
 
 .financial-breakdown {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.75rem;
   padding: 1.5rem;
 }
@@ -255,12 +261,12 @@
   th,
   td {
     padding: 0.85rem;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   thead th {
     font-size: 0.85rem;
-    color: #777;
+    color: var(--color-text-muted);
     text-align: right;
 
     &:first-child {
@@ -293,7 +299,7 @@
     th,
     td {
       border-bottom: none;
-      border-top: 2px solid #ddd;
+      border-top: 2px solid var(--color-border-subtle);
     }
 
     th {
@@ -322,18 +328,49 @@
 }
 
 .unallocated {
-  color: #777;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 .breakdown-empty {
   padding: 1.5rem;
   text-align: center;
-  color: #777;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 600px) {
   .financial-breakdown {
     padding: 1rem;
   }
+}
+
+.report-chart,
+.financial-breakdown,
+.filters {
+  border-color: var(--color-border-subtle);
+}
+
+.chart-control select {
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  border-color: var(--color-border-subtle);
+}
+
+.category-option {
+  background: var(--color-surface-raised);
+  border-color: var(--color-border-subtle);
+
+  &:hover {
+    background: var(--color-hover);
+  }
+}
+
+.breakdown-category-row:hover,
+.breakdown-subcategory-row:hover {
+  background: var(--color-hover);
+}
+
+.report-chart h2,
+.financial-breakdown h2 {
+  color: var(--color-accent);
 }

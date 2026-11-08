@@ -32,6 +32,26 @@ describe('Transactions', () => {
       splits: [],
       createdAt: '2026-10-31T19:00:00Z',
     },
+    {
+      id: 'transaction-income',
+      amount: 2500,
+      transactionType: 'INCOME' as const,
+      categoryId: 'category-1',
+      date: '2026-11-03',
+      description: 'November salary',
+      splits: [],
+      createdAt: '2026-11-03T10:00:00Z',
+    },
+    {
+      id: 'transaction-vet',
+      amount: 65,
+      transactionType: 'EXPENSE' as const,
+      categoryId: 'category-1',
+      date: '2026-11-07',
+      description: 'Vet appointment',
+      splits: [],
+      createdAt: '2026-11-07T10:00:00Z',
+    },
   ];
 
   const transactionServiceMock = {
@@ -166,5 +186,98 @@ describe('Transactions', () => {
     expect(descriptionInput.value).toBe('');
 
     expect(compiled.textContent).toContain('Extra groceries');
+  });
+
+  it('should filter transactions by type and date', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelectorAll('.transaction-card-link')).toHaveLength(3);
+
+    const toggleButton = compiled.querySelector(
+      '.transactions-filters-toggle',
+    ) as HTMLButtonElement;
+
+    toggleButton.click();
+    fixture.detectChanges();
+
+    const typeSelect = compiled.querySelector('#transaction-filter-type') as HTMLSelectElement;
+
+    const fromInput = compiled.querySelector('#transaction-filter-from') as HTMLInputElement;
+
+    const toInput = compiled.querySelector('#transaction-filter-to') as HTMLInputElement;
+
+    typeSelect.value = 'EXPENSE';
+    typeSelect.dispatchEvent(new Event('change'));
+
+    fromInput.value = '2026-11-01';
+    fromInput.dispatchEvent(new Event('change'));
+
+    toInput.value = '2026-11-30';
+    toInput.dispatchEvent(new Event('change'));
+
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.transaction-card-link')).toHaveLength(1);
+
+    expect(compiled.textContent).toContain('Vet appointment');
+    expect(compiled.textContent).not.toContain('Monthly groceries');
+    expect(compiled.textContent).not.toContain('November salary');
+
+    expect(transactionServiceMock.getTransactions).toHaveBeenCalledTimes(1);
+  });
+
+  it('should clear transaction filters', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const toggleButton = compiled.querySelector(
+      '.transactions-filters-toggle',
+    ) as HTMLButtonElement;
+
+    toggleButton.click();
+    fixture.detectChanges();
+
+    const typeSelect = compiled.querySelector('#transaction-filter-type') as HTMLSelectElement;
+
+    typeSelect.value = 'INCOME';
+    typeSelect.dispatchEvent(new Event('change'));
+
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.transaction-card-link')).toHaveLength(1);
+
+    const clearButton = compiled.querySelector('.clear-filters-button') as HTMLButtonElement;
+
+    clearButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('.transaction-card-link')).toHaveLength(3);
+    expect(typeSelect.value).toBe('ALL');
+  });
+
+  it('should reject an invalid transaction filter period', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const toggleButton = compiled.querySelector(
+      '.transactions-filters-toggle',
+    ) as HTMLButtonElement;
+
+    toggleButton.click();
+    fixture.detectChanges();
+
+    const fromInput = compiled.querySelector('#transaction-filter-from') as HTMLInputElement;
+
+    const toInput = compiled.querySelector('#transaction-filter-to') as HTMLInputElement;
+
+    fromInput.value = '2026-11-30';
+    fromInput.dispatchEvent(new Event('change'));
+
+    toInput.value = '2026-11-01';
+    toInput.dispatchEvent(new Event('change'));
+
+    fixture.detectChanges();
+
+    expect(compiled.textContent).toContain('From date cannot be after To date.');
+
+    expect(compiled.querySelectorAll('.transaction-card-link')).toHaveLength(0);
   });
 });

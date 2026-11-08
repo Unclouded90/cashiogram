@@ -1,11 +1,34 @@
 <div class="options">
-  <button type="button" class="options-button" (click)="toggle()">Options</button>
+  <button
+    type="button"
+    class="options-button"
+    [attr.aria-expanded]="open()"
+    aria-controls="options-menu"
+    (click)="toggle()"
+  >
+    Options
+  </button>
 
   @if (open()) {
-    <div class="options-menu">
-      <a routerLink="/settings/account"> Account </a>
+    <div id="options-menu" class="options-menu">
+      <a routerLink="/settings/account">Account</a>
 
-      <a routerLink="/settings/categories"> Categories </a>
+      <a routerLink="/settings/categories">Categories</a>
+
+      <div class="options-divider"></div>
+
+      <button
+        type="button"
+        class="theme-button"
+        [attr.aria-pressed]="themeService.theme() === 'dark'"
+        (click)="themeService.toggleTheme()"
+      >
+        <span aria-hidden="true">
+          {{ themeService.theme() === 'light' ? '☾' : '☀' }}
+        </span>
+
+        {{ themeService.theme() === 'light' ? 'Dark mode' : 'Light mode' }}
+      </button>
     </div>
   }
 </div>

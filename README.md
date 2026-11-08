@@ -19,6 +19,8 @@ All core V1.0 features are implemented. The project is currently undergoing fina
 - Dynamically calculated account balance
 - Interactive financial reports with advanced filtering and dynamic pie charts
 - Financial breakdown by category and subcategory, including income, expenses and unallocated amounts
+- Persistent light and dark themes with application-wide switching
+- Dashboard transaction filtering by date range and transaction type
 - PostgreSQL persistence
 - Responsive Angular dashboard
 - Docker-based local environment
@@ -144,6 +146,19 @@ Loading states, API errors and retry behaviour are handled independently for rep
 
 This keeps components independent from each other while allowing related features to stay synchronized.
 
+### Theming and UI
+
+The Angular frontend supports persistent light and dark themes through a centralized theme service.
+
+- Light theme uses warm gray and beige tones.
+- Dark theme uses navy blue surfaces with orange accents.
+- Theme preferences are stored locally and restored when the application loads.
+- A global navigation header provides access to the Options menu and theme switching from any page.
+- Shared CSS variables define colors, surfaces, borders and interactive states across the application.
+- Financial report charts use theme-specific color palettes.
+
+Dashboard transactions support client-side filtering by date range and transaction type without additional API requests.
+
 ### Service and database validation
 
 Business rules are primarily enforced in the service layer, while PostgreSQL also protects important data integrity constraints.
@@ -227,6 +242,8 @@ During frontend development, the Angular development server uses a local proxy w
 - Vitest
 - Prettier
 - Nginx
+- CSS custom properties for application-wide theming
+- SVG-based financial charts
 
 ### Testing
 
@@ -401,10 +418,9 @@ Frontend
 
 ### Remaining before V1.0 release
 
-- Code cleanup and refactoring
-- Consistent UI styling and component design
-- Light and dark theme support
-- Responsive layout and UX improvements
+- Final code cleanup and refactoring
+- UI/UX polishing and visual consistency
+- Responsive layout improvements
 - Final test suite and production build validation
 - Docker environment verification
 - V1.0 release preparation
