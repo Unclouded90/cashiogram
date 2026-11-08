@@ -504,4 +504,111 @@ describe('TransactionDetails', () => {
     expect(values).not.toContain('subcategory-1');
     expect(values).toContain('subcategory-2');
   });
+
+  it('should reload subcategories when transaction category changes', async () => {
+    const transactionWithoutSplits: Transaction = {
+      ...transaction,
+      splits: [],
+    };
+
+    const transportSubcategories = [
+      {
+        id: 'subcategory-transport',
+        name: 'Fuel',
+        description: 'Car fuel',
+        categoryId: 'category-2',
+        createdAt: '2026-11-04T17:30:00Z',
+      },
+    ];
+
+    categoryServiceMock.getCategory.mockImplementation((categoryId: string) =>
+      of(categoryId === 'category-2' ? otherCategory : category),
+    );
+
+    subcategoryServiceMock.getSubcategoriesByCategory.mockImplementation((categoryId: string) =>
+      of(categoryId === 'category-2' ? transportSubcategories : subcategories),
+    );
+
+    await createComponent(transactionWithoutSplits);
+
+    const updatedTransaction: Transaction = {
+      ...transactionWithoutSplits,
+      categoryId: 'category-2',
+    };
+
+    transactionServiceMock.updateTransaction.mockReturnValue(of(updatedTransaction));
+
+    findButton('Edit Transaction')?.click();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const categoryInput = compiled.querySelectorAll(
+      '.transaction-edit select',
+    )[1] as HTMLSelectElement;
+
+    categoryInput.value = 'category-2';
+
+    findButton('Save')?.click();
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(transactionServiceMock.updateTransaction).toHaveBeenCalledWith(
+      'transaction-1',
+      expect.objectContaining({
+        categoryId: 'category-2',
+      }),
+    );
+
+    expect(subcategoryServiceMock.getSubcategoriesByCategory).toHaveBeenCalledWith('category-2');
+
+    const addSplitButton = compiled.querySelector('.add-split-card') as HTMLButtonElement;
+
+    addSplitButton.click();
+    fixture.detectChanges();
+
+    const splitSelect = compiled.querySelector('.split-form-card select') as HTMLSelectElement;
+
+    const availableIds = Array.from(splitSelect.options).map((option) => option.value);
+
+    expect(availableIds).toContain('subcategory-transport');
+    expect(availableIds).not.toContain('subcategory-1');
+  });
+
+  it('should allow clearing the transaction description', async () => {
+    await createComponent();
+
+    const updatedTransaction: Transaction = {
+      ...transaction,
+      description: '',
+    };
+
+    transactionServiceMock.updateTransaction.mockReturnValue(of(updatedTransaction));
+
+    findButton('Edit Transaction')?.click();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const descriptionInput = compiled.querySelector(
+      '.transaction-edit input[type="text"]',
+    ) as HTMLInputElement;
+
+    descriptionInput.value = '';
+
+    findButton('Save')?.click();
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(transactionServiceMock.updateTransaction).toHaveBeenCalledWith(
+      'transaction-1',
+      expect.objectContaining({
+        description: '',
+      }),
+    );
+
+    expect(compiled.querySelector('.transaction-info p')).toBeNull();
+  });
 });

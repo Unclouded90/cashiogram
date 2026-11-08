@@ -83,8 +83,6 @@ public class CategoryService {
             category.setName(updateCategoryDTO.name());
         }
 
-        category.setName(updateCategoryDTO.name());
-
         if (updateCategoryDTO.description() != null) {
             category.setDescription(updateCategoryDTO.description());
         }

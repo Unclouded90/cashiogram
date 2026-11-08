@@ -31,6 +31,8 @@ export class Transactions implements OnInit {
   protected readonly filterFrom = signal('');
   protected readonly filterTo = signal('');
 
+  protected readonly createError = signal('');
+
   protected readonly invalidFilterPeriod = computed(
     () => !!this.filterFrom() && !!this.filterTo() && this.filterFrom() > this.filterTo(),
   );
@@ -96,6 +98,14 @@ export class Transactions implements OnInit {
     dateInput: HTMLInputElement,
     descriptionInput: HTMLInputElement,
   ): void {
+    const value = Number(amountInput.value);
+
+    if (!Number.isFinite(value) || value <= 0 || !categoryInput.value || !dateInput.value) {
+      this.createError.set('Enter a valid amount, category and date.');
+      return;
+    }
+
+    this.createError.set('');
     this.transactionService
       .createTransaction({
         amount: Number(amountInput.value),
@@ -114,6 +124,9 @@ export class Transactions implements OnInit {
           categoryInput.value = '';
           dateInput.value = '';
           descriptionInput.value = '';
+        },
+        error: () => {
+          this.createError.set('Unable to create transaction.');
         },
       });
   }

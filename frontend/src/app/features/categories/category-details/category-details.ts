@@ -69,7 +69,7 @@ export class CategoryDetails implements OnInit {
     this.categoryService
       .updateCategory(categoryId, {
         name: nameInput.value,
-        description: descriptionInput.value || null,
+        description: descriptionInput.value,
       })
       .subscribe({
         next: (updatedCategory: Category) => {
@@ -174,7 +174,7 @@ export class CategoryDetails implements OnInit {
     this.subcategoryService
       .updateSubcategory(subcategoryId, {
         name: nameInput.value,
-        description: descriptionInput.value || null,
+        description: descriptionInput.value,
       })
       .subscribe({
         next: (updatedSubcategory: Subcategory) => {

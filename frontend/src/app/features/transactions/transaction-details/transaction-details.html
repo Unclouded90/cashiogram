@@ -54,7 +54,9 @@
               }
 
               <div class="transaction-summary">
-                <strong>{{ transactionData.amount }} €</strong>
+                <strong>
+                  {{ transactionData.amount | currency: 'EUR' }}
+                </strong>
 
                 <span>{{ transactionData.transactionType }}</span>
 
@@ -114,7 +116,7 @@
                   {{ subcategoryNames().get(split.subcategoryId) ?? 'Unknown Subcategory' }}
                 </strong>
 
-                <span>{{ split.amount }} €</span>
+                <span>{{ split.amount | currency: 'EUR' }}</span>
               </button>
             }
           }

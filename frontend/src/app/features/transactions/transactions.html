@@ -102,6 +102,13 @@
         Add Transaction
       </button>
     </div>
+
+    @if (createError()) {
+      <p class="transaction-create-error" role="alert">
+        {{ createError() }}
+      </p>
+    }
+
     @for (transaction of filteredTransactions(); track transaction.id) {
       <a class="transaction-card-link" [routerLink]="['/transactions', transaction.id]">
         <app-card>

@@ -1,4 +1,6 @@
-import { signal } from '@angular/core';
+import { signal, LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt-PT';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
@@ -8,6 +10,8 @@ import { AccountService } from '../account/account.service';
 import { Balance } from './balance';
 import { Balance as BalanceModel } from './balance.model';
 import { BalanceService } from './balance.service';
+
+registerLocaleData(localePt);
 
 describe('Balance', () => {
   let component: Balance;
@@ -55,6 +59,10 @@ describe('Balance', () => {
           provide: AccountService,
           useValue: accountServiceMock,
         },
+        {
+          provide: LOCALE_ID,
+          useValue: 'pt-PT',
+        },
       ],
     }).compileComponents();
 
@@ -75,7 +83,10 @@ describe('Balance', () => {
     const balanceValue = compiled.querySelector('.balance-value');
 
     expect(balanceValue).toBeTruthy();
-    expect(balanceValue?.textContent).toContain('1,300.00');
+
+    const formattedValue = balanceValue?.textContent?.replace(/\s+/g, ' ').trim();
+
+    expect(formattedValue).toContain('1 300,00 €');
   });
 
   it('should show an error when loading the balance fails', () => {
@@ -122,7 +133,8 @@ describe('Balance', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const balanceValue = compiled.querySelector('.balance-value');
+    const formattedValue = balanceValue?.textContent?.replace(/\s+/g, ' ').trim();
 
-    expect(balanceValue?.textContent).toContain('1,800.00');
+    expect(formattedValue).toContain('1 800,00 €');
   });
 });

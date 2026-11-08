@@ -91,25 +91,10 @@
   cursor: pointer;
 }
 
-.subcategory-form-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 .subcategory-card:hover,
 .add-subcategory-card:hover {
   background: var(--color-hover);
   box-shadow: var(--shadow-card);
-}
-
-.add-subcategory-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  cursor: pointer;
 }
 
 .add-subcategory-card strong {

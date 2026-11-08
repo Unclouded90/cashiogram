@@ -278,6 +278,13 @@ Tests are executed automatically through GitHub Actions on every push and pull r
 
 ## Running the Application
 
+### Prerequisites
+
+- Docker and Docker Compose
+- Java 21 for local backend development
+- Node.js 26 and npm for local frontend development
+- Docker running when executing repository integration tests with Testcontainers
+
 Create the local environment file:
 
 ```bash
@@ -306,10 +313,11 @@ The backend and PostgreSQL can be started through Docker:
 docker compose up -d postgres backend
 ```
 
-Then run the Angular development server:
+Then install the dependencies and run the Angular development server:
 
 ```bash
 cd frontend
+npm ci
 npm start
 ```
 
@@ -352,44 +360,41 @@ The frontend test suite includes:
 
 ```text
 Backend
-├── Account                   ✅
-├── Categories                ✅
-├── Subcategories             ✅
-├── Transactions              ✅
-├── Transaction Splits        ✅
-├── Balance                   ✅
-└── Reports                   ✅
+├── Account                         ✅
+├── Categories                      ✅
+├── Subcategories                   ✅
+├── Transactions                    ✅
+├── Transaction Splits              ✅
+├── Balance                         ✅
+└── Reports                         ✅
 
 Persistence
-├── PostgreSQL                ✅
-├── Flyway                    ✅
-└── Repository Tests          ✅
+├── PostgreSQL                      ✅
+├── Flyway                          ✅
+└── Repository Tests                ✅
 
 Infrastructure
-├── Docker Environment        ✅
-├── Backend CI                ✅
-└── Frontend CI               ✅
+├── Docker Environment              ✅
+├── Backend CI                      ✅
+└── Frontend CI                     ✅
 
 Frontend
-├── Angular Infrastructure    ✅
-├── Responsive Dashboard      ✅
-├── Account Management        ✅
-├── Balance Integration       ✅
-├── Transactions              ✅
-├── Categories                ✅
-├── Subcategories             ✅
-├── Transaction Splits        ✅
-└── Reports                   ✅
+├── Angular Infrastructure          ✅
+├── Light/Dark Theme                ✅
+├── Responsive Dashboard            ✅
+├── Dashboard Transaction Filters   ✅
+├── Account Management              ✅
+├── Balance Integration             ✅
+├── Transactions                    ✅
+├── Categories                      ✅
+├── Subcategories                   ✅
+├── Transaction Splits              ✅
+└── Reports                         ✅
 ```
 
-### Remaining before V1.0 release
+### V1.1 Objectives
 
-- Final code cleanup and refactoring
-- UI/UX polishing and visual consistency
-- Responsive layout improvements
-- Final test suite and production build validation
-- Docker environment verification
-- V1.0 release preparation
+- Bulk import of income and expense transactions from CSV files.
 
 ---
 

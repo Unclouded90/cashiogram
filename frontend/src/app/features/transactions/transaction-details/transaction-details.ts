@@ -121,7 +121,7 @@ export class TransactionDetails implements OnInit {
         transactionType: typeInput.value as 'INCOME' | 'EXPENSE',
         categoryId,
         date: dateInput.value,
-        description: descriptionInput.value || null,
+        description: descriptionInput.value,
       })
       .subscribe({
         next: (updatedTransaction: Transaction) => {
@@ -132,6 +132,14 @@ export class TransactionDetails implements OnInit {
               this.category.set(category);
             },
           });
+
+          this.subcategoryService
+            .getSubcategoriesByCategory(updatedTransaction.categoryId)
+            .subscribe({
+              next: (subcategories) => {
+                this.subcategories.set(subcategories);
+              },
+            });
 
           this.editingTransaction.set(false);
           this.balanceService.getBalance().subscribe();

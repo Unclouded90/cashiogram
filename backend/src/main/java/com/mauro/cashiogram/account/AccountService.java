@@ -16,7 +16,7 @@ import com.mauro.cashiogram.exception.ResourceNotFoundException;
 public class AccountService {
     private final AccountRepository accountRepository;
 
-    public AccountService(AccountRepository accountRepository, AccountRepository accountRepository_1) {
+    public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 

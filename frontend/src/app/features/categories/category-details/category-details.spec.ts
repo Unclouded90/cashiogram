@@ -409,4 +409,84 @@ describe('CategoryDetails', () => {
 
     expect(nameInput).toBeTruthy();
   });
+
+  it('should allow clearing the category description', async () => {
+    const updatedCategory = {
+      ...category,
+      description: '',
+    };
+
+    categoryServiceMock.updateCategory.mockReturnValue(of(updatedCategory));
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const editButton = Array.from(compiled.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Edit Category',
+    );
+
+    editButton?.click();
+    fixture.detectChanges();
+
+    const descriptionInput = compiled.querySelector(
+      '.category-edit input:nth-child(2)',
+    ) as HTMLInputElement;
+
+    descriptionInput.value = '';
+
+    const saveButton = Array.from(
+      compiled.querySelectorAll<HTMLButtonElement>('.category-edit-actions button'),
+    ).find((button) => button.textContent?.trim() === 'Save');
+
+    saveButton?.click();
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(categoryServiceMock.updateCategory).toHaveBeenCalledWith('category-1', {
+      name: 'Groceries',
+      description: '',
+    });
+
+    expect(compiled.textContent).not.toContain('General purchases');
+  });
+
+  it('should allow clearing a subcategory description', async () => {
+    const updatedSubcategory = {
+      ...subcategories[0],
+      description: '',
+    };
+
+    subcategoryServiceMock.updateSubcategory.mockReturnValue(of(updatedSubcategory));
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const subcategoryCard = Array.from(
+      compiled.querySelectorAll<HTMLButtonElement>('.subcategory-card'),
+    ).find((button) => button.textContent?.includes('Food')) as HTMLButtonElement;
+
+    subcategoryCard.click();
+    fixture.detectChanges();
+
+    const form = compiled.querySelector('.subcategory-form-card') as HTMLElement;
+
+    const descriptionInput = form.querySelectorAll('input')[1] as HTMLInputElement;
+
+    descriptionInput.value = '';
+
+    const saveButton = Array.from(form.querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === 'Save',
+    );
+
+    saveButton?.click();
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(subcategoryServiceMock.updateSubcategory).toHaveBeenCalledWith('subcategory-1', {
+      name: 'Food',
+      description: '',
+    });
+
+    expect(compiled.textContent).not.toContain('Meals and supermarket');
+  });
 });
