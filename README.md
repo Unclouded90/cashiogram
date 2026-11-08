@@ -6,8 +6,6 @@ The project started from a personal need for better control over transaction cat
 
 > The backend and persistence layers are implemented. The Angular frontend includes a responsive dashboard, account management, balance integration, categories, subcategories, transactions, transaction split management and interactive financial reports.
 
-All core V1.0 features are implemented. The project is currently undergoing final code cleanup, UI/UX polishing and release validation.
-
 ---
 
 ## Core Features
