@@ -18,6 +18,7 @@
 .transaction-form {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
@@ -25,9 +26,16 @@
 .transaction-form input,
 .transaction-form select,
 .transaction-form button {
-  height: 2.25rem;
-  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  height: auto;
+  padding: 0.6rem 0.85rem;
   box-sizing: border-box;
+}
+
+.transaction-form .amount-input {
+  flex: 0 1 150px;
+  width: 150px;
+  min-width: 110px;
 }
 
 .transaction-item {
@@ -107,20 +115,46 @@
   text-align: center;
 }
 
-.transaction-form {
-  flex-wrap: wrap;
-}
-
 @media (max-width: 600px) {
+  .transactions-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .transaction-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .transaction-form > input,
+  .transaction-form > select,
+  .transaction-form > button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .transaction-form .amount-input {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+
+  .transaction-form > input[type='text'],
+  .transaction-form > button {
+    grid-column: 1 / -1;
+  }
+
   .transaction-filters {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .transaction-filter-field,
   .transaction-filter-field input,
   .transaction-filter-field select {
     width: 100%;
-    box-sizing: border-box;
+    min-width: 0;
   }
 }
 

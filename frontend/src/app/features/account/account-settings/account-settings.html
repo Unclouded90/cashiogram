@@ -1,7 +1,5 @@
 <app-settings-page>
   <app-card>
-    <a routerLink="/" class="back-button"> ← Back to Dashboard </a>
-
     <section class="account-settings">
       <h1>Account Settings</h1>
 
@@ -17,7 +15,7 @@
             #initialBalance
           />
 
-          <button type="button" (click)="updateAccount(initialBalance.value)">
+          <button type="button" class="btn-primary" (click)="updateAccount(initialBalance.value)">
             Update Account
           </button>
         </div>

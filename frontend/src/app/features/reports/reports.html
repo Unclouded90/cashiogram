@@ -1,14 +1,12 @@
-<main class="reports-page">
+<main class="page-container">
   <app-card>
     <section class="reports">
-      <a routerLink="/" class="back-button">← Back to Dashboard</a>
-
       <header class="reports-header">
         <h1>Financial Reports</h1>
         <p>Analyze your income and expenses.</p>
       </header>
 
-      <details class="filters" open>
+      <details class="filters">
         <summary>Filters</summary>
 
         <div class="filters-content">
@@ -293,7 +291,11 @@
                 </strong>
               </div>
 
-              <div class="summary-item">
+              <div
+                class="summary-item net-result"
+                [class.net-positive]="period.netTotal > 0"
+                [class.net-negative]="period.netTotal < 0"
+              >
                 <span>Net Result</span>
                 <strong>
                   {{ formatCurrency(period.netTotal) }}

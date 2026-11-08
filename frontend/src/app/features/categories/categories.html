@@ -1,7 +1,5 @@
 <app-settings-page>
   <app-card>
-    <a routerLink="/" class="back-button"> ← Back to Dashboard </a>
-
     <section class="categories">
       <h1>Categories</h1>
 
@@ -15,7 +13,11 @@
           #categoryDescription
         />
 
-        <button type="button" (click)="createCategory(categoryName, categoryDescription)">
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="createCategory(categoryName, categoryDescription)"
+        >
           Add Category
         </button>
       </div>

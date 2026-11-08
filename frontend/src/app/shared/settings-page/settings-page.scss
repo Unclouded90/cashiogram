@@ -1,6 +1,14 @@
 .settings-page {
   width: 100%;
   max-width: 900px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
+  min-width: 0;
+  margin-inline: auto;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    padding: 1rem;
+  }
 }

@@ -382,40 +382,6 @@ Frontend
 └── Reports                   ✅
 ```
 
-## V1.0 Status
-
-```text
-Backend
-├── Account                   ✅
-├── Categories                ✅
-├── Subcategories             ✅
-├── Transactions              ✅
-├── Transaction Splits        ✅
-├── Balance                   ✅
-└── Reports                   ✅
-
-Persistence
-├── PostgreSQL                ✅
-├── Flyway                    ✅
-└── Repository Tests          ✅
-
-Infrastructure
-├── Docker Environment        ✅
-├── Backend CI                ✅
-└── Frontend CI               ✅
-
-Frontend
-├── Angular Infrastructure    ✅
-├── Responsive Dashboard      ✅
-├── Account Management        ✅
-├── Balance Integration       ✅
-├── Transactions              ✅
-├── Categories                ✅
-├── Subcategories             ✅
-├── Transaction Splits        ✅
-└── Reports                   ✅
-```
-
 ### Remaining before V1.0 release
 
 - Final code cleanup and refactoring

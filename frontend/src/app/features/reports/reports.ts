@@ -1,5 +1,4 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { forkJoin, Observable, of, Subscription } from 'rxjs';
 
 import { Card } from '../../shared/card/card';
@@ -50,7 +49,7 @@ interface BreakdownData {
 
 @Component({
   selector: 'app-reports',
-  imports: [Card, RouterLink],
+  imports: [Card],
   templateUrl: './reports.html',
   styleUrl: './reports.scss',
 })

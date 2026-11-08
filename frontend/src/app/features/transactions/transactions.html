@@ -66,7 +66,14 @@
 
   <div class="transactions-content">
     <div class="transaction-form">
-      <input type="number" step="0.01" min="0.01" placeholder="Amount" #amount />
+      <input
+        class="amount-input"
+        type="number"
+        step="0.01"
+        min="0.01"
+        placeholder="Amount"
+        #amount
+      />
 
       <select #transactionType>
         <option value="EXPENSE">Expense</option>
@@ -89,6 +96,7 @@
 
       <button
         type="button"
+        class="btn-primary"
         (click)="createTransaction(amount, transactionType, category, date, description)"
       >
         Add Transaction

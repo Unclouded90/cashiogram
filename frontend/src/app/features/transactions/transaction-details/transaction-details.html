@@ -1,9 +1,5 @@
 <app-settings-page>
   <app-card>
-    <button type="button" class="back-button" (click)="goBackToDashboard()">
-      ← Back to Dashboard
-    </button>
-
     @if (transaction(); as transactionData) {
       <section class="transaction-details">
         @if (editingTransaction()) {
@@ -103,9 +99,13 @@
                     Save
                   </button>
 
-                  <button type="button" (click)="cancelSplitEdit()">Cancel</button>
+                  <button type="button" class="btn-secondary" (click)="cancelSplitEdit()">
+                    Cancel
+                  </button>
 
-                  <button type="button" (click)="deleteSplit(split.id)">Delete</button>
+                  <button type="button" class="btn-danger" (click)="deleteSplit(split.id)">
+                    Delete
+                  </button>
                 </div>
               </div>
             } @else {
@@ -141,11 +141,17 @@
               />
 
               <div class="split-form-actions">
-                <button type="button" (click)="createSplit(splitSubcategory, splitAmount)">
+                <button
+                  type="button"
+                  class="btn-primary"
+                  (click)="createSplit(splitSubcategory, splitAmount)"
+                >
                   Save
                 </button>
 
-                <button type="button" (click)="cancelSplitForm()">Cancel</button>
+                <button type="button" class="btn-secondary" (click)="cancelSplitForm()">
+                  Cancel
+                </button>
               </div>
             </div>
           } @else if (unallocatedAmount() > 0 && availableSubcategories().length > 0) {

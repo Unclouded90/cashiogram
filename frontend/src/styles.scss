@@ -51,6 +51,8 @@
   --shadow-card: 0 4px 24px rgb(0 0 0 / 0.25);
 }
 
+// Base
+
 html {
   min-height: 100%;
   background: var(--color-bg);
@@ -70,18 +72,40 @@ body {
     color 0.2s ease;
 }
 
+// Form controls
+
 button,
 input,
 select,
 textarea {
   font: inherit;
-  color: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-sizing: border-box;
+  color: var(--color-text);
+}
+
+button,
+input:not([type='checkbox']):not([type='radio']),
+select {
+  min-height: 44px;
+  padding: 0.6rem 0.85rem;
+}
+
+textarea {
+  padding: 0.75rem 0.85rem;
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
+
   cursor: pointer;
 }
 
@@ -98,6 +122,15 @@ textarea {
   border-radius: 0.5rem;
 }
 
+// Checkboxes and radio buttons
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-accent);
+}
+
+// Focus states
+
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
@@ -107,8 +140,26 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+// Links
+
 a {
   color: var(--color-accent);
+}
+
+// Page layout
+
+.page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -117,7 +168,30 @@ a {
   }
 }
 
-input[type='checkbox'],
-input[type='radio'] {
-  accent-color: var(--color-accent);
+button.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border: 1px solid var(--color-accent);
+  font-weight: 600;
+}
+
+button.btn-secondary {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-subtle);
+}
+
+button.btn-danger {
+  background: var(--color-surface-raised);
+  color: var(--color-expense);
+  border: 1px solid var(--color-expense);
+}
+
+button.btn-secondary:hover:not(:disabled),
+button.btn-danger:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+button.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
 }

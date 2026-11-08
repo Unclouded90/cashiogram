@@ -77,10 +77,6 @@ export class TransactionDetails implements OnInit {
     });
   }
 
-  protected goBackToDashboard(): void {
-    this.router.navigate(['/']);
-  }
-
   protected editTransaction(): void {
     this.editingTransaction.set(true);
   }
